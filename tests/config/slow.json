@@ -1,0 +1,55 @@
+{
+  "font_spec": {
+    "name": "Source Serif Pro",
+    "size": 12
+  },
+
+  "geometry": {
+    "paper_width": 595,
+    "paper_height": 842,
+    "margin_left": 71,
+    "margin_right": 71,
+    "margin_top": 71,
+    "margin_bottom": 71
+  },
+
+  "block_parameters": {
+    "infinity": 10000,
+    "demerits_break": 10,
+    "demerits_flagged": 100,
+    "demerits_fitness": 300,
+    "rounds": 1
+  },
+  "inline_parameters": {
+    "infinity": 10000,
+    "demerits_break": 10,
+    "demerits_flagged": 100,
+    "demerits_fitness": 300,
+    "rounds": 1
+  },
+
+  "block_tolerances": [10],
+  "inline_tolerances": [50],
+
+  "block_formatter": {
+    "club_penalty": 5000,
+    "widow_penalty": 5000,
+
+    "line_height": 15,
+
+    "inter_line_size": 2,
+    "inter_line_stretch": 3,
+    "inter_line_shrink": 1,
+
+    "skip_size": 15,
+    "skip_stretch": 20,
+    "skip_shrink": 10
+  },
+  "inline_formatter": {
+    "hyphen_penalty": 100,
+
+    "space_base": 3,
+    "space_stretch": 6,
+    "space_shrink": 9
+  }
+}

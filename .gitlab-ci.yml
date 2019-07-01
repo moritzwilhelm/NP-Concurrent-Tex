@@ -1,0 +1,29 @@
+image: udsdepend/np-ss19-project-env:latest
+
+cache:
+  key: "$CI_PROJECT_NAME"
+  paths:
+    - .gradle/
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+build:
+  stage: build
+  artifacts:
+    paths:
+      - out
+    expire_in: 2 days
+  script:
+    - chmod +x ./gradlew
+    - ./gradlew jarSlug jarRocket
+
+test:
+  stage: test
+  dependencies:
+    - build
+  script:
+    - echo "Slug:"
+    - python3 -m sidekick tester ./out/slug.jar ./tests/**/*.py
+    - echo "Rocket:"
+    - python3 -m sidekick tester ./out/rocket.jar ./tests/**/*.py
