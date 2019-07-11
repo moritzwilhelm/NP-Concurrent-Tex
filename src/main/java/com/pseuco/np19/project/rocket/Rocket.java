@@ -15,7 +15,8 @@ import com.pseuco.np19.project.launcher.cli.CLIException;
 import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.parser.Parser;
 import com.pseuco.np19.project.launcher.render.Renderable;
-import com.pseuco.np19.project.slug.tree.Document;
+import com.pseuco.np19.project.rocket.tree.RocketDocument;
+import com.pseuco.np19.project.slug.Slug;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
 import com.pseuco.np19.project.slug.tree.block.IBlockVisitor;
 import com.pseuco.np19.project.slug.tree.block.Paragraph;
@@ -59,7 +60,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 	}
 
 	public static void main(String[] args) {
-		// Slug.main(args);
+		//Slug.main(args);
 		try {
 			List<Unit> units = CLI.parseArgs(args);
 			if (units.isEmpty()) {
@@ -83,7 +84,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 	@Override
 	public void run() {
 		try {
-			final Document document = new Document();
+			final RocketDocument document = new RocketDocument();
 			Thread parserThread = new Rocket(this.unit) {
 				public void run() {
 					try {
