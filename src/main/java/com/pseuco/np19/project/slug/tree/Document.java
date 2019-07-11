@@ -1,5 +1,9 @@
 package com.pseuco.np19.project.slug.tree;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.pseuco.np19.project.launcher.parser.DocumentBuilder;
 import com.pseuco.np19.project.launcher.parser.ParagraphBuilder;
 import com.pseuco.np19.project.launcher.parser.Position;
@@ -7,37 +11,64 @@ import com.pseuco.np19.project.slug.tree.block.BlockElement;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
 import com.pseuco.np19.project.slug.tree.block.Paragraph;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
 /**
- * A {@link DocumentBuilder} building an in-memory representation of an input document.
+ * A {@link DocumentBuilder} building an in-memory representation of an input
+ * document.
  */
 public class Document implements DocumentBuilder {
-    private List<BlockElement> elements = new LinkedList<>();
+	private List<BlockElement> elements = new ArrayList<>();
+	private int currentIndex = 0;
+	private boolean finished = false;
+	private int buffer = 1;
 
-    /**
-     * @return Returns the block elements of the document.
-     */
-    public List<BlockElement> getElements() {
-        return this.elements;
-    }
+	/**
+	 * @return Returns the block elements of the document.
+	 */
+	public synchronized List<BlockElement> getElements() {
+		return this.elements;
+	}
 
-    @Override
-    public void appendForcedPageBreak(Position position) {
-        this.elements.add(new ForcedPageBreak());
-    }
+	@Override
+	public synchronized void appendForcedPageBreak(Position position) {
+		this.elements.add(new ForcedPageBreak());
+		notifyAll();
+	}
 
-    @Override
-    public ParagraphBuilder appendParagraph(Position position) {
-        Paragraph paragraph = new Paragraph();
-        this.elements.add(paragraph);
-        return paragraph;
-    }
+	@Override
+	public synchronized ParagraphBuilder appendParagraph(Position position) {
+		Paragraph paragraph = new Paragraph();
+		this.elements.add(paragraph);
+		notifyAll();
+		return paragraph;
+	}
 
-    @Override
-    public void finish() {
-        this.elements = Collections.unmodifiableList(this.elements);
-    }
+	@Override
+	public synchronized void finish() {
+		try {
+			this.elements = Collections.unmodifiableList(this.elements);
+			buffer = 0;
+			notifyAll();
+			while (!(currentIndex == elements.size())) {
+				wait();
+			}
+			finished = true;
+		} catch (InterruptedException e) {
+		}
+	}
+
+	public synchronized BlockElement getCurrentElement() {
+		try {
+			while (!(currentIndex < elements.size() - buffer))
+				wait();
+			return elements.get(currentIndex++);
+		} catch (InterruptedException e) {
+			return null;
+		} finally {
+			notifyAll();
+		}
+	}
+
+	public synchronized boolean isFinished() {
+		return finished;
+	}
 }
