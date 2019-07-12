@@ -124,7 +124,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 			this.unit.getPrinter().finishDocument();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			// e.printStackTrace();
 		}
 	}
 
