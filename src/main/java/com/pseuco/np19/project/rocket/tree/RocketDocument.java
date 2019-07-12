@@ -58,8 +58,10 @@ public class RocketDocument implements DocumentBuilder {
 
 	public synchronized BlockElement getCurrentElement() {
 		try {
-			while (!(currentIndex < elements.size() - buffer))
+			while (!(currentIndex < elements.size() - buffer)) {
+				//System.out.println("wait");
 				wait();
+			}
 			return elements.get(currentIndex++);
 		} catch (InterruptedException e) {
 			return null;

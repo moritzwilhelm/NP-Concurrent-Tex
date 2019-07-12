@@ -16,6 +16,7 @@ import com.pseuco.np19.project.launcher.cli.CLIException;
 import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.parser.Parser;
 import com.pseuco.np19.project.launcher.render.Renderable;
+import com.pseuco.np19.project.rocket.tree.RocketDocument;
 import com.pseuco.np19.project.slug.tree.Document;
 import com.pseuco.np19.project.slug.tree.block.BlockElement;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
@@ -68,88 +69,114 @@ public class Rocket extends Thread implements IBlockVisitor {
 			if (units.isEmpty()) {
 				CLI.printUsage(System.out);
 			}
+			// System.out.println("");
+			// System.out.println("num units: " + units.size());
 			for (Unit unit : units) {
 				Thread unitThread = new Rocket(unit);
 				threadList.add(unitThread);
-				unitThread.start();
+				// System.out.println("start unit thread");
+				unitThread.run();
 			}
 
 			for (Thread thread : threadList) {
 				thread.join();
+				// System.out.println("thread terminated");
 			}
-
 			System.exit(0);
 		} catch (CLIException error) {
 			System.err.println(error.getMessage());
 			CLI.printUsage(System.err);
 			System.exit(1);
 		} catch (Throwable error) {
-			error.printStackTrace();
+			// error.printStackTrace();
 			System.exit(1);
 		}
 	}
 
-	private void creep() throws IOException {
-		final Document document = new Document();
-
-		Parser.parse(this.unit.getInputReader(), document);
-
-		for (BlockElement element : document.getElements()) {
-			element.accept(this);
-			if (this.unableToBreak) {
-				this.unit.getPrinter().printErrorPage();
-				this.unit.getPrinter().finishDocument();
-				// do not do unnecessary work if a paragraph failed to typeset
-				return;
-			}
-		}
-
-		this.configuration.getBlockFormatter().pushForcedPageBreak(this.items::add);
-
+	private void creep() {
 		try {
-			final List<Piece<Renderable>> pieces = breakIntoPieces(this.configuration.getBlockParameters(), this.items,
-					this.configuration.getBlockTolerances(), this.configuration.getGeometry().getTextHeight());
+			final Document document = new Document();
 
-			this.unit.getPrinter().printPages(this.unit.getPrinter().renderPages(pieces));
-		} catch (UnableToBreakException ignored) {
-			this.unit.getPrinter().printErrorPage();
-			System.err.println("Unable to break lines!");
+			Parser.parse(this.unit.getInputReader(), document);
+
+			for (BlockElement element : document.getElements()) {
+				element.accept(this);
+				if (this.unableToBreak) {
+					this.unit.getPrinter().printErrorPage();
+					this.unit.getPrinter().finishDocument();
+					// do not do unnecessary work if a paragraph failed to typeset
+					return;
+				}
+			}
+
+			this.configuration.getBlockFormatter().pushForcedPageBreak(this.items::add);
+
+			try {
+				final List<Piece<Renderable>> pieces = breakIntoPieces(this.configuration.getBlockParameters(),
+						this.items, this.configuration.getBlockTolerances(),
+						this.configuration.getGeometry().getTextHeight());
+
+				this.unit.getPrinter().printPages(this.unit.getPrinter().renderPages(pieces));
+			} catch (UnableToBreakException ignored) {
+				this.unit.getPrinter().printErrorPage();
+				System.err.println("Unable to break lines!");
+			}
+			this.unit.getPrinter().finishDocument();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		this.unit.getPrinter().finishDocument();
 	}
 
 	@Override
 	public void run() {
-		try {
-			creep();
+		creep();
+	}
 
-		} catch (Throwable e) {
-			return;
+	// @Override
+	public void run2() {
+		try {
+			final RocketDocument document = new RocketDocument();
+			Thread parserThread = new Rocket(this.unit) {
+				public void run() {
+					try {
+						Parser.parse(unit.getInputReader(), document);
+						// System.out.println("Parser terminated");
+					} catch (IOException e) {
+						return;
+					}
+				}
+			};
+			parserThread.start();
+			// System.out.println("started parser");
+			// parserThread.join();
+			while (!document.isFinished()) {
+				document.getCurrentElement().accept(this);
+				if (this.unableToBreak) {
+					this.unit.getPrinter().printErrorPage();
+					this.unit.getPrinter().finishDocument();
+					return;
+				}
+			}
+
+			this.configuration.getBlockFormatter().pushForcedPageBreak(this.items::add);
+			// System.out.println("finished parsing & block elements");
+			try {
+				final List<Piece<Renderable>> pieces = breakIntoPieces(this.configuration.getBlockParameters(),
+						this.items, this.configuration.getBlockTolerances(),
+						this.configuration.getGeometry().getTextHeight());
+
+				this.unit.getPrinter().printPages(this.unit.getPrinter().renderPages(pieces));
+			} catch (UnableToBreakException ignored) {
+				this.unit.getPrinter().printErrorPage();
+				System.err.println("Unable to break lines!");
+			}
+			System.out.println("finishDoc");
+			this.unit.getPrinter().finishDocument();
+		} catch (Throwable error) {
+			// error.printStackTrace();
+			// System.exit(1);
 		}
 	}
-	/*
-	 * @Override public void run() { try { final RocketDocument document = new
-	 * RocketDocument(); Thread parserThread = new Rocket(this.unit) { public void
-	 * run() { try { Parser.parse(unit.getInputReader(), document); } catch
-	 * (IOException e) { return; } } }; parserThread.start(); //
-	 * parserThread.join(); while (!document.isFinished()) {
-	 * document.getCurrentElement().accept(this); if (this.unableToBreak) {
-	 * this.unit.getPrinter().printErrorPage();
-	 * this.unit.getPrinter().finishDocument(); // do not do unnecessary work if a
-	 * paragraph failed to typeset return; } }
-	 * 
-	 * this.configuration.getBlockFormatter().pushForcedPageBreak(this.items::add);
-	 * 
-	 * try { final List<Piece<Renderable>> pieces =
-	 * breakIntoPieces(this.configuration.getBlockParameters(), this.items,
-	 * this.configuration.getBlockTolerances(),
-	 * this.configuration.getGeometry().getTextHeight());
-	 * 
-	 * this.unit.getPrinter().printPages(this.unit.getPrinter().renderPages(pieces))
-	 * ; } catch (UnableToBreakException ignored) {
-	 * this.unit.getPrinter().printErrorPage();
-	 * System.err.println("Unable to break lines!"); }
-	 * this.unit.getPrinter().finishDocument(); } catch (Throwable error) {
-	 * error.printStackTrace(); return; // System.exit(1); }
-	 */
+
 }
