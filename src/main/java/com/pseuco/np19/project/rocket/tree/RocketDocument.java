@@ -73,4 +73,8 @@ public class RocketDocument implements DocumentBuilder {
 	public synchronized boolean isFinished() {
 		return finished;
 	}
+	
+	public synchronized boolean noElement() {
+		return currentIndex == elements.size();
+	}
 }

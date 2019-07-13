@@ -132,7 +132,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 
 	@Override
 	public void run() {
-		creep();
+		run2();
 	}
 
 	// @Override
@@ -153,6 +153,9 @@ public class Rocket extends Thread implements IBlockVisitor {
 			// System.out.println("started parser");
 			// parserThread.join();
 			while (!document.isFinished()) {
+				if(document.noElement()) {
+					continue;
+				}
 				document.getCurrentElement().accept(this);
 				if (this.unableToBreak) {
 					this.unit.getPrinter().printErrorPage();
@@ -173,7 +176,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 				this.unit.getPrinter().printErrorPage();
 				System.err.println("Unable to break lines!");
 			}
-			System.out.println("finishDoc");
+			//System.out.println("finishDoc");
 			this.unit.getPrinter().finishDocument();
 		} catch (Throwable error) {
 			// error.printStackTrace();
