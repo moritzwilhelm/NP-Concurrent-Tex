@@ -71,12 +71,14 @@ public class Rocket extends Thread implements IBlockVisitor {
 			}
 			// System.out.println("");
 			// System.out.println("num units: " + units.size());
-			for (Unit unit : units) {
-				Thread unitThread = new Rocket(unit);
+			for (int i = 0; i < units.size() - 1; i++) {
+				Thread unitThread = new Rocket(units.get(i));
 				threadList.add(unitThread);
 				// System.out.println("start unit thread");
-				unitThread.run();
+				unitThread.start();
 			}
+
+			(new Rocket(units.get(units.size() - 1))).run();
 
 			for (Thread thread : threadList) {
 				thread.join();
