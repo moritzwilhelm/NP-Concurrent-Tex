@@ -1,4 +1,4 @@
-package com.pseuco.np19.project.rocket.tree;
+package com.pseuco.np19.project.rocket.monitors;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +15,7 @@ import com.pseuco.np19.project.slug.tree.block.Paragraph;
  * A {@link DocumentBuilder} building an in-memory representation of an input
  * document.
  */
-public class RocketDocument implements DocumentBuilder {
+public class DocumentMonitorOLD implements DocumentBuilder {
 	private List<BlockElement> elements = new ArrayList<>();
 	private int currentIndex = 0;
 	private boolean finished = false;
@@ -59,7 +59,7 @@ public class RocketDocument implements DocumentBuilder {
 	public synchronized BlockElement getCurrentElement() {
 		try {
 			while (!(currentIndex < elements.size() - buffer)) {
-				//System.out.println("wait");
+				// System.out.println("wait");
 				wait();
 			}
 			return elements.get(currentIndex++);
@@ -73,7 +73,7 @@ public class RocketDocument implements DocumentBuilder {
 	public synchronized boolean isFinished() {
 		return finished;
 	}
-	
+
 	public synchronized boolean noElement() {
 		return currentIndex == elements.size();
 	}

@@ -16,7 +16,7 @@ import com.pseuco.np19.project.launcher.cli.CLIException;
 import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.parser.Parser;
 import com.pseuco.np19.project.launcher.render.Renderable;
-import com.pseuco.np19.project.rocket.tree.RocketDocument;
+import com.pseuco.np19.project.rocket.monitors.DocumentMonitorOLD;
 import com.pseuco.np19.project.slug.tree.Document;
 import com.pseuco.np19.project.slug.tree.block.BlockElement;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
@@ -37,6 +37,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 		this.configuration = this.unit.getConfiguration();
 	}
 
+	// TODO: run für BlockThread
 	@Override
 	public void visit(Paragraph paragraph) {
 		// transform the paragraph into a sequence of items
@@ -48,6 +49,8 @@ public class Rocket extends Thread implements IBlockVisitor {
 					this.configuration.getInlineTolerances(), this.configuration.getGeometry().getTextWidth());
 
 			// transform lines into items and append them to `this.items`
+
+			// add to ADT at segment, index
 			this.configuration.getBlockFormatter().pushParagraph(this.items::add, lines);
 		} catch (UnableToBreakException error) {
 			System.err.println("Unable to break paragraph!");
@@ -55,6 +58,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 		}
 	}
 
+	// TODO: run für BlockThread
 	@Override
 	public void visit(ForcedPageBreak forcedPageBreak) {
 		// transform forced page break into items and append them to `this.items`
@@ -111,7 +115,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 				}
 			}
 
-			this.configuration.getBlockFormatter().pushForcedPageBreak(this.items::add);
+			// this.configuration.getBlockFormatter().pushForcedPageBreak(this.items::add);
 
 			try {
 				final List<Piece<Renderable>> pieces = breakIntoPieces(this.configuration.getBlockParameters(),
@@ -132,13 +136,13 @@ public class Rocket extends Thread implements IBlockVisitor {
 
 	@Override
 	public void run() {
-		run2();
+		parser_unitAgent();
 	}
 
-	// @Override
-	public void run2() {
+	// parser concurrent to main/unitAgent
+	public void parser_unitAgent() {
 		try {
-			final RocketDocument document = new RocketDocument();
+			final DocumentMonitorOLD document = new DocumentMonitorOLD();
 			Thread parserThread = new Rocket(this.unit) {
 				public void run() {
 					try {
@@ -153,7 +157,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 			// System.out.println("started parser");
 			// parserThread.join();
 			while (!document.isFinished()) {
-				if(document.noElement()) {
+				if (document.noElement()) {
 					continue;
 				}
 				document.getCurrentElement().accept(this);
@@ -164,8 +168,11 @@ public class Rocket extends Thread implements IBlockVisitor {
 				}
 			}
 
+			// remove this, see DocumentMonitor.finish()
 			this.configuration.getBlockFormatter().pushForcedPageBreak(this.items::add);
 			// System.out.println("finished parsing & block elements");
+
+			// SegmentThread run
 			try {
 				final List<Piece<Renderable>> pieces = breakIntoPieces(this.configuration.getBlockParameters(),
 						this.items, this.configuration.getBlockTolerances(),
@@ -176,7 +183,7 @@ public class Rocket extends Thread implements IBlockVisitor {
 				this.unit.getPrinter().printErrorPage();
 				System.err.println("Unable to break lines!");
 			}
-			//System.out.println("finishDoc");
+			// System.out.println("finishDoc");
 			this.unit.getPrinter().finishDocument();
 		} catch (Throwable error) {
 			// error.printStackTrace();
