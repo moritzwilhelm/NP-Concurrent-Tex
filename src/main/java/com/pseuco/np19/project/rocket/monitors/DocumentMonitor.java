@@ -3,38 +3,46 @@ package com.pseuco.np19.project.rocket.monitors;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.pseuco.np19.project.launcher.Configuration;
+import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.parser.DocumentBuilder;
 import com.pseuco.np19.project.launcher.parser.ParagraphBuilder;
 import com.pseuco.np19.project.launcher.parser.Position;
-import com.pseuco.np19.project.rocket.block.BlockElement;
-import com.pseuco.np19.project.rocket.block.ForcedPageBreak;
-import com.pseuco.np19.project.rocket.block.Paragraph;
+import com.pseuco.np19.project.rocket.Task;
+import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
+import com.pseuco.np19.project.slug.tree.block.Paragraph;
 
 /**
  * A {@link DocumentBuilder} building an in-memory representation of an input
  * document.
  */
 public class DocumentMonitor implements DocumentBuilder {
-	private Queue<BlockElement> elements = new LinkedList<>();
+	private Queue<Task> tasks = new LinkedList<>();
 	private boolean finished = false;
 	private int currentSegment = 0;
 	private int currentIndex = 0;
 	private SegmentsMonitor segMon;
+	private final Unit unit;
+	private final Configuration configuration;
 
-	public DocumentMonitor(SegmentsMonitor segMon) {
+	public DocumentMonitor(SegmentsMonitor segMon, Unit unit, Configuration configuration) {
+		super();
 		this.segMon = segMon;
+		this.unit = unit;
+		this.configuration = configuration;
 	}
 
 	/**
 	 * @return Returns the block elements of the document.
 	 */
-	public synchronized Queue<BlockElement> getElements() {
-		return this.elements;
+	public synchronized Queue<Task> getElements() {
+		return this.tasks;
 	}
 
 	@Override
 	public synchronized void appendForcedPageBreak(Position position) {
-		this.elements.add(new ForcedPageBreak(currentSegment, currentIndex));
+		this.tasks.add(
+				new Task(new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.unit, this.configuration));
 
 		// finish segment
 		segMon.finishSegment(currentSegment, currentIndex + 1);
@@ -47,20 +55,21 @@ public class DocumentMonitor implements DocumentBuilder {
 
 	@Override
 	public synchronized ParagraphBuilder appendParagraph(Position position) {
-		Paragraph paragraph = new Paragraph(currentSegment, currentIndex);
-		this.elements.add(paragraph);
+		Paragraph paragraph = new Paragraph();
+		this.tasks.add(new Task(paragraph, this.currentSegment, this.currentIndex, this.unit, this.configuration));
 		currentIndex++;
 		return paragraph;
 	}
 
 	@Override
 	public synchronized void finish() {
-		this.elements.add(new ForcedPageBreak(currentSegment, currentIndex));
+		this.tasks.add(
+				new Task(new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.unit, this.configuration));
 		finished = true;
 	}
 
-	public synchronized BlockElement getCurrentElement() {
-		return elements.poll();
+	public synchronized Task getCurrentElement() {
+		return tasks.poll();
 	}
 
 	public synchronized boolean isFinished() {
@@ -68,6 +77,6 @@ public class DocumentMonitor implements DocumentBuilder {
 	}
 
 	public synchronized boolean isEmpty() {
-		return elements.isEmpty();
+		return tasks.isEmpty();
 	}
 }
