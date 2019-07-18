@@ -35,6 +35,16 @@ public class Task implements Runnable {
 	public void run() {
 		// TODO Auto-generated method stub
 		
+		
+		//accept + visit
+		/*document.getCurrentElement().accept(this);
+		if (this.unableToBreak) {
+			this.unit.getPrinter().printErrorPage();
+			this.unit.getPrinter().finishDocument();
+			return;
+		}*/
+		
+		// falls voll, starte segment runnable
 	}
 
 	

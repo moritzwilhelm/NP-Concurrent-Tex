@@ -1,7 +1,8 @@
 package com.pseuco.np19.project.rocket.monitors;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
 
 import com.pseuco.np19.project.launcher.Configuration;
 import com.pseuco.np19.project.launcher.cli.Unit;
@@ -17,31 +18,33 @@ import com.pseuco.np19.project.slug.tree.block.Paragraph;
  * document.
  */
 public class DocumentMonitor implements DocumentBuilder {
-	private Queue<Task> tasks = new LinkedList<>();
+	// private Queue<Task> tasks = new LinkedList<>();
+	private final ExecutorService executor;
 	private boolean finished = false;
 	private int currentSegment = 0;
 	private int currentIndex = 0;
-	private SegmentsMonitor segMon;
+	private final SegmentsMonitor segMon;
 	private final Unit unit;
 	private final Configuration configuration;
+	private final Lock lock;
+	private final Condition condition;
 
-	public DocumentMonitor(SegmentsMonitor segMon, Unit unit, Configuration configuration) {
+	// private boolean kabutt; true falls irgendein fehler
+
+	public DocumentMonitor(ExecutorService executor, SegmentsMonitor segMon, Unit unit, Configuration configuration,
+			Lock lock, Condition condition) {
 		super();
+		this.executor = executor;
 		this.segMon = segMon;
 		this.unit = unit;
 		this.configuration = configuration;
-	}
-
-	/**
-	 * @return Returns the block elements of the document.
-	 */
-	public synchronized Queue<Task> getElements() {
-		return this.tasks;
+		this.lock = lock;
+		this.condition = condition;
 	}
 
 	@Override
 	public synchronized void appendForcedPageBreak(Position position) {
-		this.tasks.add(
+		executor.submit(
 				new Task(new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.unit, this.configuration));
 
 		// finish segment
@@ -56,27 +59,27 @@ public class DocumentMonitor implements DocumentBuilder {
 	@Override
 	public synchronized ParagraphBuilder appendParagraph(Position position) {
 		Paragraph paragraph = new Paragraph();
-		this.tasks.add(new Task(paragraph, this.currentSegment, this.currentIndex, this.unit, this.configuration));
+		executor.submit(new Task(paragraph, this.currentSegment, this.currentIndex, this.unit, this.configuration));
 		currentIndex++;
 		return paragraph;
 	}
 
 	@Override
 	public synchronized void finish() {
-		this.tasks.add(
+		executor.submit(
 				new Task(new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.unit, this.configuration));
 		finished = true;
-	}
+		try {
+			lock.lock();
+			condition.signal();
+		} finally {
+			lock.unlock();
+		}
 
-	public synchronized Task getCurrentElement() {
-		return tasks.poll();
 	}
 
 	public synchronized boolean isFinished() {
 		return finished;
 	}
 
-	public synchronized boolean isEmpty() {
-		return tasks.isEmpty();
-	}
 }
