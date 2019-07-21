@@ -20,7 +20,6 @@ import com.pseuco.np19.project.launcher.parser.Parser;
 import com.pseuco.np19.project.launcher.render.Renderable;
 import com.pseuco.np19.project.rocket.monitors.DocumentMonitor;
 import com.pseuco.np19.project.rocket.monitors.DocumentMonitorOLD;
-import com.pseuco.np19.project.rocket.monitors.SegmentsMonitor;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
 import com.pseuco.np19.project.slug.tree.block.IBlockVisitor;
 import com.pseuco.np19.project.slug.tree.block.Paragraph;
@@ -34,54 +33,55 @@ public class UnitThread extends Thread implements IBlockVisitor {
 
 	private final List<Item<Renderable>> items = new LinkedList<>();
 
-	private boolean unableToBreak = false;
+	private boolean unableToBreak = false; // nur fuer testzwecke mit parser-unitthread (kann spaeter weg)
 
 	public UnitThread(Unit unit) {
 		this.unit = unit;
 		this.configuration = this.unit.getConfiguration();
-		this.executor = Executors.newCachedThreadPool();
+		this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	}
 
 	@Override
 	public void run() {
-		parser_unitAgent();
+		fast_nicht_mehr_TODO();
 		return;
 	}
 
-	public void TODO() {
-		Lock lock = new ReentrantLock();
-		Condition condition = lock.newCondition();
-		SegmentsMonitor segmon = new SegmentsMonitor();
-		final DocumentMonitor document = new DocumentMonitor(this.executor, segmon, this.unit, this.configuration, lock,
-				condition);
-		Parser parser = new Parser(unit.getInputReader(), document);
-		Thread parserThread = new UnitThread(this.unit) {
+	public void fast_nicht_mehr_TODO() {
+		final Lock lock = new ReentrantLock();
+		final Condition condition = lock.newCondition();
+		final DocumentMonitor document = new DocumentMonitor(this.unit, this.executor, lock, condition);
+
+		executor.submit(new UnitThread(this.unit) {
+			@Override
 			public void run() {
 				try {
-					parser.buildDocument();
-					// System.out.println("Parser terminated");
+					Parser.parse(unit.getInputReader(), document);
+					System.out.println("Parser terminated");
 				} catch (IOException e) {
-					// terminiere signal!
-					return;
+					e.printStackTrace();
+					executor.shutdownNow();
 				}
 			}
-		};
-		parserThread.start();
+		});
+
 		try {
 			lock.lock();
-			while (!document.isFinished()) { // || isKabutt TODO (wo ist kabutt, also in welcher Klasse)
+			while (!executor.isShutdown()) {
 				try {
+					System.out.println("warte auf condition!");
 					condition.await();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		} finally {
 			lock.unlock();
 		}
-		// if kabutt --> terminiere
-		executor.shutdown();
+
+		System.out.println("Heureka");
+		System.out.println("");
+		executor.shutdownNow();
 	}
 
 	// parser concurrent to main/unitAgent
