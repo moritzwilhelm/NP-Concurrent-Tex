@@ -38,7 +38,8 @@ public class UnitThread extends Thread implements IBlockVisitor {
 	public UnitThread(Unit unit) {
 		this.unit = unit;
 		this.configuration = this.unit.getConfiguration();
-		this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		this.executor = Executors.newCachedThreadPool();
+		// this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 	}
 
 	@Override
