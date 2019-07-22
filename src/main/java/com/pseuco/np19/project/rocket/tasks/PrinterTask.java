@@ -14,28 +14,25 @@ import com.pseuco.np19.project.rocket.monitors.SegmentsMonitor;
 
 public class PrinterTask extends Task {
 
-	private int printed;
-
 	protected PrinterTask(Unit unit, ExecutorService executor, SegmentsMonitor segments, Map<Integer, List<Page>> pages,
-			AtomicInteger printIndex, int segment, Lock lock, Condition terminating, int printed) {
+			AtomicInteger printIndex, int segment, Lock lock, Condition terminating) {
 		super(unit, executor, segments, pages, printIndex, segment, lock, terminating);
-		this.printed = printed;
 	}
 
 	@Override
 	public void run() {
 		// System.out.println("Started printer! " + segment);
 		try {
-			this.unit.getPrinter().printPages(pages.get(printed));
+			this.unit.getPrinter().printPages(pages.get(segment));
 
 			// TODO: haesslich (?), schoener machen falls moeglich
 			synchronized (this.unit) {
-				if (pages.containsKey(++this.printed)) {
+				if (pages.containsKey(segment + 1)) {
 					// System.out.println("next");
 					executor.submit(new PrinterTask(this.unit, this.executor, segments, pages, printIndex, segment + 1,
-							lock, terminating, printed));
+							lock, terminating));
 				} else {
-					this.printIndex.set(printed);
+					this.printIndex.set(segment + 1);
 				}
 			}
 			// System.out.println("segment: " + segment + " last: " + segments.getSegment(segment).isLast());
