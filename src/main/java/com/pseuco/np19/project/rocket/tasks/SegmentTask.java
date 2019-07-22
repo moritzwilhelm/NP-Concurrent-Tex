@@ -13,14 +13,12 @@ import com.pseuco.np19.project.launcher.breaker.UnableToBreakException;
 import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.printer.Page;
 import com.pseuco.np19.project.rocket.monitors.SegmentsMonitor;
-import com.pseuco.np19.project.slug.tree.block.BlockElement;
 
 public class SegmentTask extends Task {
 
 	public SegmentTask(Unit unit, ExecutorService executor, SegmentsMonitor segments, Map<Integer, List<Page>> pages,
-			AtomicInteger printIndex, BlockElement element, int segment, int index, Lock lock,
-			Condition terminating) {
-		super(unit, executor, segments, pages, printIndex, element, segment, index, lock, terminating);
+			AtomicInteger printIndex, int segment, Lock lock, Condition terminating) {
+		super(unit, executor, segments, pages, printIndex, segment, lock, terminating);
 	}
 
 	@Override
@@ -39,8 +37,8 @@ public class SegmentTask extends Task {
 			synchronized (this.unit) {
 				// System.out.println("Kann ich printen? " + segment);
 				if (this.segment == this.printIndex.intValue()) {
-					executor.submit(new PrinterTask(unit, executor, segments, pages, printIndex, element, segment, index,
-							lock, terminating, this.printIndex.intValue()));
+					executor.submit(new PrinterTask(unit, executor, segments, pages, printIndex, segment, lock,
+							terminating, this.printIndex.intValue()));
 				}
 			}
 

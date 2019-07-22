@@ -24,10 +24,16 @@ import com.pseuco.np19.project.slug.tree.block.Paragraph;
 
 public class BlockElementTask extends Task implements IBlockVisitor {
 
+	private final BlockElement element;
+
+	private final int index;
+
 	public BlockElementTask(Unit unit, ExecutorService executor, SegmentsMonitor segments,
 			Map<Integer, List<Page>> pages, AtomicInteger printIndex, BlockElement element, int segment, int index,
 			Lock lock, Condition terminating) {
-		super(unit, executor, segments, pages, printIndex, element, segment, index, lock, terminating);
+		super(unit, executor, segments, pages, printIndex, segment, lock, terminating);
+		this.element = element;
+		this.index = index;
 	}
 
 	@Override
@@ -38,11 +44,11 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 
 		// falls voll, starte segment runnable
 
-		// System.out.print("Segment: " + segment + " currSize: " + segMon.getSegment(segment).getSize() + " / " + segMon.getSegment(segment).getSizeWhenDone());
+		// System.out.print("Segment: " + segment + " currSize: " + segments.getSegment(segment).getSize() + " / " + segments.getSegment(segment).getSizeWhenDone());
 		if (segments.addBlockElement(segment, index, items)) {
 			// System.out.println("starte segTASK");
 			executor.submit(new SegmentTask(this.unit, this.executor, this.segments, this.pages, this.printIndex,
-					this.element, this.segment, this.index, this.lock, this.terminating));
+					this.segment, this.lock, this.terminating));
 		}
 	}
 
