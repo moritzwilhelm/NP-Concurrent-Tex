@@ -15,31 +15,31 @@ public class Segment {
 
 	private boolean last = false;
 
-	public int getSize() {
+	public synchronized int getSize() {
 		return blockElements.size();
 	}
 
-	public int getSizeWhenDone() {
+	public synchronized int getSizeWhenDone() {
 		return sizeWhenDone;
 	}
 
-	public void setSizeWhenDone(int sizeWhenDone) {
+	public synchronized void setSizeWhenDone(int sizeWhenDone) {
 		this.sizeWhenDone = sizeWhenDone;
 	}
 
-	public void add(int index, List<Item<Renderable>> items) {
+	public synchronized void add(int index, List<Item<Renderable>> items) {
 		blockElements.put(index, items);
 	}
 
-	public List<Item<Renderable>> get(int index) {
+	public synchronized List<Item<Renderable>> get(int index) {
 		return blockElements.get(index);
 	}
 
-	public void setLast() {
+	public synchronized void setLast() {
 		this.last = true;
 	}
 
-	public boolean isLast() {
+	public synchronized boolean isLast() {
 		return last;
 	}
 
