@@ -71,7 +71,7 @@ public class DocumentMonitor implements DocumentBuilder {
 
 	@Override
 	public synchronized void finish() {
-		System.out.println("parser finish");
+		// System.out.println("parser finish");
 		segMon.finishSegment(this.currentSegment, this.currentIndex + 1);
 		segMon.getSegment(currentSegment).setLast();
 		executor.submit(new BlockElementTask(this.unit, this.executor, this.segMon, this.pages, printIndex,

@@ -26,22 +26,22 @@ public class PrinterTask extends Task {
 
 	@Override
 	public void run() {
-		System.out.println("Started printer! " + segment);
+		// System.out.println("Started printer! " + segment);
 		try {
 			this.unit.getPrinter().printPages(pages.get(printed));
 
 			synchronized (this.unit) {
 				if (pages.containsKey(++this.printed)) {
-					System.out.println("next");
+					// System.out.println("next");
 					executor.submit(new PrinterTask(this.unit, this.executor, segMon, pages, printIndex, element,
 							segment + 1, index, lock, condition, printed));
 				} else {
 					this.printIndex.set(printed);
 				}
 			}
-			//System.out.println("segment: " + segment + " last: " + segMon.getSegment(segment).isLast());
+			// System.out.println("segment: " + segment + " last: " + segMon.getSegment(segment).isLast());
 			if (segMon.getSegment(segment).isLast()) {
-				System.out.println("Iam teh last: " + segment);
+				// System.out.println("I am the last printer: " + segment);
 				this.unit.getPrinter().finishDocument();
 
 				try {
@@ -54,7 +54,6 @@ public class PrinterTask extends Task {
 			}
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

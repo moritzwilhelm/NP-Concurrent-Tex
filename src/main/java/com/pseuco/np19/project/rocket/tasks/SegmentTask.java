@@ -21,12 +21,11 @@ public class SegmentTask extends Task {
 			AtomicInteger printIndex, BlockElement element, int segment, int currentIndex, Lock lock,
 			Condition condition) {
 		super(unit, executor, segMon, pages, printIndex, element, segment, currentIndex, lock, condition);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void run() {
-		System.out.println("segtask started: " + segment);
+		// System.out.println("segtask started: " + segment);
 		for (int i = 0; i < segMon.getSegment(this.segment).getSize(); i++) {
 			this.items.addAll(segMon.getSegment(segment).get(i));
 		}
@@ -38,14 +37,14 @@ public class SegmentTask extends Task {
 			pages.put(Integer.valueOf(segment), renderedPages);
 
 			synchronized (this.unit) {
-				System.out.println("Kann ich printen? " + segment);
+				// System.out.println("Kann ich printen? " + segment);
 				if (this.segment == this.printIndex.intValue()) {
 					executor.submit(new PrinterTask(unit, executor, segMon, pages, printIndex, element, segment, index,
 							lock, condition, this.printIndex.intValue()));
 				}
 			}
 
-			System.out.println("seg " + segment + " finished");
+			// System.out.println("seg " + segment + " finished");
 
 		} catch (UnableToBreakException ignored) {
 			try {

@@ -28,20 +28,19 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 			AtomicInteger printIndex, BlockElement element, int currentSegment, int currentIndex, Lock lock,
 			Condition condition) {
 		super(unit, executor, segMon, pages, printIndex, element, currentSegment, currentIndex, lock, condition);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void run() {
-		
+
 		// go to visit
 		element.accept(this);
 
 		// falls voll, starte segment runnable
 
-		//System.out.print("Segment: " + segment + " currSize: " + segMon.getSegment(segment).getSize() + " / " + segMon.getSegment(segment).getSizeWhenDone());
+		// System.out.print("Segment: " + segment + " currSize: " + segMon.getSegment(segment).getSize() + " / " + segMon.getSegment(segment).getSizeWhenDone());
 		if (segMon.addBlockElement(segment, index, items)) {
-			//System.out.println("starte segTASK");
+			// System.out.println("starte segTASK");
 			executor.submit(new SegmentTask(this.unit, this.executor, this.segMon, this.pages, this.printIndex,
 					this.element, this.segment, this.index, this.lock, this.condition));
 		}

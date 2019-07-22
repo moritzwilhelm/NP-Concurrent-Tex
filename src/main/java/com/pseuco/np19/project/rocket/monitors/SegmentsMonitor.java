@@ -16,7 +16,7 @@ public class SegmentsMonitor {
 		this.putNewSegment();
 	}
 
-	// tuple consisting of ArrayList and size(when completely filled)
+	// tuple consisting of HashMap and size(when completely filled)
 	public class Segment {
 		private Map<Integer, List<Item<Renderable>>> blockElements = new HashMap<>();
 
@@ -72,7 +72,7 @@ public class SegmentsMonitor {
 	}
 
 	public synchronized void finishSegment(int segment, int size) {
-		//System.out.println("segment : " + segment + " Groesse: " + size);
+		// System.out.println("segment : " + segment + " Groesse: " + size);
 		segments.get(Integer.valueOf(segment)).setSizeWhenDone(size);
 	}
 
