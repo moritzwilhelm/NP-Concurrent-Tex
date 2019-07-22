@@ -26,7 +26,7 @@ public class SegmentTask extends Task {
 
 	@Override
 	public void run() {
-		System.out.println("segtask started");
+		System.out.println("segtask started: " + segment);
 		for (int i = 0; i < segMon.getSegment(this.segment).getSize(); i++) {
 			this.items.addAll(segMon.getSegment(segment).get(i));
 		}

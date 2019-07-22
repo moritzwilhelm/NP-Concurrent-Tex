@@ -26,7 +26,7 @@ public class PrinterTask extends Task {
 
 	@Override
 	public void run() {
-		System.out.println("Started printer!");
+		System.out.println("Started printer! " + segment);
 		try {
 			this.unit.getPrinter().printPages(pages.get(printed));
 
@@ -34,14 +34,14 @@ public class PrinterTask extends Task {
 				if (pages.containsKey(++this.printed)) {
 					System.out.println("next");
 					executor.submit(new PrinterTask(this.unit, this.executor, segMon, pages, printIndex, element,
-							++segment, index, lock, condition, printed));
+							segment + 1, index, lock, condition, printed));
 				} else {
 					this.printIndex.set(printed);
 				}
 			}
 			//System.out.println("segment: " + segment + " last: " + segMon.getSegment(segment).isLast());
 			if (segMon.getSegment(segment).isLast()) {
-				System.out.println("Iam teh last");
+				System.out.println("Iam teh last: " + segment);
 				this.unit.getPrinter().finishDocument();
 
 				try {
