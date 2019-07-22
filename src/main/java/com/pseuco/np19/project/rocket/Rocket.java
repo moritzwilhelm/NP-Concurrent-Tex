@@ -18,14 +18,12 @@ public class Rocket {
 			}
 			// System.out.println("");
 			// System.out.println("num units: " + units.size());
-			for (int i = 0; i < units.size() - 1; i++) {
-				Thread unitThread = new UnitThread(units.get(i));
+			for (Unit unit : units) {
+				Thread unitThread = new UnitThread(unit);
 				threadList.add(unitThread);
 				// System.out.println("start unit thread");
 				unitThread.start();
 			}
-
-			(new UnitThread(units.get(units.size() - 1))).run(); // TODO: ggf unnoetig da wait in join(?)
 
 			for (Thread thread : threadList) {
 				thread.join();
