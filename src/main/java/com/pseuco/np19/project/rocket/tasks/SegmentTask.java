@@ -37,8 +37,8 @@ public class SegmentTask extends Task {
 			synchronized (this.unit) {
 				// System.out.println("Kann ich printen? " + segment);
 				if (this.segment == this.printIndex.intValue()) {
-					executor.submit(new PrinterTask(unit, executor, segments, pages, printIndex, segment, lock,
-							terminating, this.printIndex.intValue()));
+					executor.submit(
+							new PrinterTask(unit, executor, segments, pages, printIndex, segment, lock, terminating));
 				}
 			}
 
