@@ -30,7 +30,7 @@ public abstract class Task implements Runnable {
 
 	protected final AtomicInteger printIndex;
 
-	protected int segment;
+	protected final int segment;
 
 	protected final List<Item<Renderable>> items = new LinkedList<>();
 
