@@ -25,11 +25,11 @@ public class Rocket {
 				unitThread.start();
 			}
 
-			(new UnitThread(units.get(units.size() - 1))).run();
+			(new UnitThread(units.get(units.size() - 1))).run(); // TODO: ggf unnoetig da wait in join(?)
 
 			for (Thread thread : threadList) {
 				thread.join();
-				// System.out.println("thread terminated");
+				// System.out.println("unit terminated");
 			}
 			System.exit(0);
 		} catch (CLIException error) {
@@ -37,7 +37,7 @@ public class Rocket {
 			CLI.printUsage(System.err);
 			System.exit(1);
 		} catch (Throwable error) {
-			// error.printStackTrace();
+			error.printStackTrace();
 			System.exit(1);
 		}
 	}

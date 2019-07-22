@@ -30,41 +30,41 @@ public class DocumentMonitor implements DocumentBuilder {
 
 	private final Lock lock;
 
-	private final Condition condition;
+	private final Condition terminate;
 
 	private int currentSegment = 0;
 
 	private int currentIndex = 0;
 
-	private final SegmentsMonitor segMon = new SegmentsMonitor();
+	private final SegmentsMonitor segments = new SegmentsMonitor();
 
 	private final Map<Integer, List<Page>> pages = new ConcurrentHashMap<Integer, List<Page>>();
 
 	private final AtomicInteger printIndex = new AtomicInteger(0);
 
-	public DocumentMonitor(Unit unit, ExecutorService executor, Lock lock, Condition condition) {
+	public DocumentMonitor(Unit unit, ExecutorService executor, Lock lock, Condition terminate) {
 		this.unit = unit;
 		this.executor = executor;
 		this.lock = lock;
-		this.condition = condition;
+		this.terminate = terminate;
 	}
 
 	@Override
 	public synchronized void appendForcedPageBreak(Position position) {
-		segMon.finishSegment(this.currentSegment, this.currentIndex + 1);
-		executor.submit(new BlockElementTask(this.unit, this.executor, this.segMon, this.pages, this.printIndex,
-				new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.lock, this.condition));
+		segments.finishSegment(this.currentSegment, this.currentIndex + 1);
+		executor.submit(new BlockElementTask(this.unit, this.executor, this.segments, this.pages, this.printIndex,
+				new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.lock, this.terminate));
 
 		this.currentSegment++;
 		this.currentIndex = 0;
-		segMon.putNewSegment();
+		segments.putNewSegment();
 		// System.out.println(" naechstes segment " + currentSegment);
 	}
 
 	@Override
 	public synchronized ParagraphBuilder appendParagraph(Position position) {
-		Paragraph paragraph = new ConcurrentParagraph(this.unit, this.executor, this.segMon, this.pages, printIndex,
-				this.currentSegment, this.currentIndex, this.lock, this.condition);
+		Paragraph paragraph = new ConcurrentParagraph(this.unit, this.executor, this.segments, this.pages,
+				this.printIndex, this.currentSegment, this.currentIndex, this.lock, this.terminate);
 		this.currentIndex++;
 		return paragraph;
 	}
@@ -72,9 +72,9 @@ public class DocumentMonitor implements DocumentBuilder {
 	@Override
 	public synchronized void finish() {
 		// System.out.println("parser finish");
-		segMon.finishSegment(this.currentSegment, this.currentIndex + 1);
-		segMon.getSegment(currentSegment).setLast();
-		executor.submit(new BlockElementTask(this.unit, this.executor, this.segMon, this.pages, printIndex,
-				new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.lock, this.condition));
+		segments.finishSegment(this.currentSegment, this.currentIndex + 1);
+		segments.getSegment(currentSegment).setLast();
+		executor.submit(new BlockElementTask(this.unit, this.executor, this.segments, this.pages, printIndex,
+				new ForcedPageBreak(), this.currentSegment, this.currentIndex, this.lock, this.terminate));
 	}
 }

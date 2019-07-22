@@ -25,7 +25,7 @@ public abstract class Task implements Runnable {
 
 	protected final Configuration configuration;
 
-	protected final SegmentsMonitor segMon;
+	protected final SegmentsMonitor segments;
 
 	protected final Map<Integer, List<Page>> pages;
 
@@ -39,21 +39,21 @@ public abstract class Task implements Runnable {
 
 	protected final Lock lock;
 
-	protected final Condition condition;
+	protected final Condition terminating;
 
-	protected Task(Unit unit, ExecutorService executor, SegmentsMonitor segMon, Map<Integer, List<Page>> pages,
-			AtomicInteger printIndex, BlockElement element, int segment, int index, Lock lock, Condition condition) {
+	protected Task(Unit unit, ExecutorService executor, SegmentsMonitor segments, Map<Integer, List<Page>> pages,
+			AtomicInteger printIndex, BlockElement element, int segment, int index, Lock lock, Condition terminating) {
 		this.unit = unit;
 		this.configuration = unit.getConfiguration();
 		this.executor = executor;
-		this.segMon = segMon;
+		this.segments = segments;
 		this.pages = pages;
 		this.printIndex = printIndex;
 		this.element = element;
 		this.segment = segment;
 		this.index = index;
 		this.lock = lock;
-		this.condition = condition;
+		this.terminating = terminating;
 	}
 
 	@Override

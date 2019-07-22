@@ -17,10 +17,10 @@ public class PrinterTask extends Task {
 
 	private int printed;
 
-	protected PrinterTask(Unit unit, ExecutorService executor, SegmentsMonitor segMon, Map<Integer, List<Page>> pages,
-			AtomicInteger printIndex, BlockElement element, int segment, int index, Lock lock, Condition condition,
+	protected PrinterTask(Unit unit, ExecutorService executor, SegmentsMonitor segments, Map<Integer, List<Page>> pages,
+			AtomicInteger printIndex, BlockElement element, int segment, int index, Lock lock, Condition terminating,
 			int printed) {
-		super(unit, executor, segMon, pages, printIndex, element, segment, index, lock, condition);
+		super(unit, executor, segments, pages, printIndex, element, segment, index, lock, terminating);
 		this.printed = printed;
 	}
 
@@ -30,24 +30,26 @@ public class PrinterTask extends Task {
 		try {
 			this.unit.getPrinter().printPages(pages.get(printed));
 
+			// TODO: haesslich (?), schoener machen falls moeglich
 			synchronized (this.unit) {
 				if (pages.containsKey(++this.printed)) {
 					// System.out.println("next");
-					executor.submit(new PrinterTask(this.unit, this.executor, segMon, pages, printIndex, element,
-							segment + 1, index, lock, condition, printed));
+					executor.submit(new PrinterTask(this.unit, this.executor, segments, pages, printIndex, element,
+							segment + 1, index, lock, terminating, printed));
 				} else {
 					this.printIndex.set(printed);
 				}
 			}
-			// System.out.println("segment: " + segment + " last: " + segMon.getSegment(segment).isLast());
-			if (segMon.getSegment(segment).isLast()) {
+			// System.out.println("segment: " + segment + " last: " +
+			// segMon.getSegment(segment).isLast());
+			if (segments.getSegment(segment).isLast()) {
 				// System.out.println("I am the last printer: " + segment);
 				this.unit.getPrinter().finishDocument();
 
 				try {
 					lock.lock();
 					this.executor.shutdown();
-					condition.signal();
+					terminating.signal();
 				} finally {
 					lock.unlock();
 				}

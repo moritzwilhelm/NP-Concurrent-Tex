@@ -24,10 +24,10 @@ import com.pseuco.np19.project.slug.tree.block.Paragraph;
 
 public class BlockElementTask extends Task implements IBlockVisitor {
 
-	public BlockElementTask(Unit unit, ExecutorService executor, SegmentsMonitor segMon, Map<Integer, List<Page>> pages,
-			AtomicInteger printIndex, BlockElement element, int currentSegment, int currentIndex, Lock lock,
-			Condition condition) {
-		super(unit, executor, segMon, pages, printIndex, element, currentSegment, currentIndex, lock, condition);
+	public BlockElementTask(Unit unit, ExecutorService executor, SegmentsMonitor segments,
+			Map<Integer, List<Page>> pages, AtomicInteger printIndex, BlockElement element, int segment, int index,
+			Lock lock, Condition terminating) {
+		super(unit, executor, segments, pages, printIndex, element, segment, index, lock, terminating);
 	}
 
 	@Override
@@ -39,10 +39,10 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 		// falls voll, starte segment runnable
 
 		// System.out.print("Segment: " + segment + " currSize: " + segMon.getSegment(segment).getSize() + " / " + segMon.getSegment(segment).getSizeWhenDone());
-		if (segMon.addBlockElement(segment, index, items)) {
+		if (segments.addBlockElement(segment, index, items)) {
 			// System.out.println("starte segTASK");
-			executor.submit(new SegmentTask(this.unit, this.executor, this.segMon, this.pages, this.printIndex,
-					this.element, this.segment, this.index, this.lock, this.condition));
+			executor.submit(new SegmentTask(this.unit, this.executor, this.segments, this.pages, this.printIndex,
+					this.element, this.segment, this.index, this.lock, this.terminating));
 		}
 	}
 
@@ -69,7 +69,7 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 			try {
 				lock.lock();
 				this.executor.shutdown();
-				condition.signal();
+				terminating.signal();
 			} finally {
 				lock.unlock();
 			}

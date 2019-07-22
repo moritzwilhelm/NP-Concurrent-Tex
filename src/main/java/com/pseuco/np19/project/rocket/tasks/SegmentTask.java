@@ -17,17 +17,17 @@ import com.pseuco.np19.project.slug.tree.block.BlockElement;
 
 public class SegmentTask extends Task {
 
-	public SegmentTask(Unit unit, ExecutorService executor, SegmentsMonitor segMon, Map<Integer, List<Page>> pages,
-			AtomicInteger printIndex, BlockElement element, int segment, int currentIndex, Lock lock,
-			Condition condition) {
-		super(unit, executor, segMon, pages, printIndex, element, segment, currentIndex, lock, condition);
+	public SegmentTask(Unit unit, ExecutorService executor, SegmentsMonitor segments, Map<Integer, List<Page>> pages,
+			AtomicInteger printIndex, BlockElement element, int segment, int index, Lock lock,
+			Condition terminating) {
+		super(unit, executor, segments, pages, printIndex, element, segment, index, lock, terminating);
 	}
 
 	@Override
 	public void run() {
 		// System.out.println("segtask started: " + segment);
-		for (int i = 0; i < segMon.getSegment(this.segment).getSize(); i++) {
-			this.items.addAll(segMon.getSegment(segment).get(i));
+		for (int i = 0; i < segments.getSegment(this.segment).getSize(); i++) {
+			this.items.addAll(segments.getSegment(segment).get(i));
 		}
 
 		try {
@@ -39,8 +39,8 @@ public class SegmentTask extends Task {
 			synchronized (this.unit) {
 				// System.out.println("Kann ich printen? " + segment);
 				if (this.segment == this.printIndex.intValue()) {
-					executor.submit(new PrinterTask(unit, executor, segMon, pages, printIndex, element, segment, index,
-							lock, condition, this.printIndex.intValue()));
+					executor.submit(new PrinterTask(unit, executor, segments, pages, printIndex, element, segment, index,
+							lock, terminating, this.printIndex.intValue()));
 				}
 			}
 
@@ -57,7 +57,7 @@ public class SegmentTask extends Task {
 			try {
 				lock.lock();
 				this.executor.shutdown();
-				condition.signal();
+				terminating.signal();
 			} finally {
 				lock.unlock();
 			}

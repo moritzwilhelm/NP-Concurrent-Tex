@@ -25,8 +25,8 @@ public class UnitThread extends Thread {
 	@Override
 	public void run() {
 		final Lock lock = new ReentrantLock();
-		final Condition terminate = lock.newCondition();
-		final DocumentMonitor document = new DocumentMonitor(this.unit, this.executor, lock, terminate);
+		final Condition terminating = lock.newCondition();
+		final DocumentMonitor document = new DocumentMonitor(this.unit, this.executor, lock, terminating);
 
 		executor.submit(new UnitThread(this.unit) {
 			@Override
@@ -46,7 +46,7 @@ public class UnitThread extends Thread {
 			while (!executor.isShutdown()) {
 				try {
 					// System.out.println("warte auf condition!");
-					terminate.await();
+					terminating.await();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

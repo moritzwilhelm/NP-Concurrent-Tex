@@ -18,38 +18,38 @@ public class ConcurrentParagraph extends Paragraph {
 
 	private final ExecutorService executor;
 
-	private final SegmentsMonitor segMon;
+	private final SegmentsMonitor segments;
 
 	private final Map<Integer, List<Page>> pages;
 
 	private final AtomicInteger printIndex;
 
-	private final int currentSegment;
+	private final int segment;
 
-	private final int currentIndex;
+	private final int index;
 
 	private final Lock lock;
 
-	private final Condition condition;
+	private final Condition terminating;
 
-	public ConcurrentParagraph(Unit unit, ExecutorService executor, SegmentsMonitor segMon,
-			Map<Integer, List<Page>> pages, AtomicInteger printIndex, int currentSegment, int currentIndex, Lock lock,
-			Condition condition) {
+	public ConcurrentParagraph(Unit unit, ExecutorService executor, SegmentsMonitor segments,
+			Map<Integer, List<Page>> pages, AtomicInteger printIndex, int segment, int index, Lock lock,
+			Condition terminating) {
 		super();
 		this.unit = unit;
 		this.executor = executor;
-		this.segMon = segMon;
+		this.segments = segments;
 		this.pages = pages;
 		this.printIndex = printIndex;
-		this.currentSegment = currentSegment;
-		this.currentIndex = currentIndex;
+		this.segment = segment;
+		this.index = index;
 		this.lock = lock;
-		this.condition = condition;
+		this.terminating = terminating;
 	}
 
 	@Override
 	public void finish() {
-		executor.submit(new BlockElementTask(this.unit, this.executor, this.segMon, this.pages, this.printIndex, this,
-				this.currentSegment, this.currentIndex, this.lock, this.condition));
+		executor.submit(new BlockElementTask(this.unit, this.executor, this.segments, this.pages, this.printIndex, this,
+				this.segment, this.index, this.lock, this.terminating));
 	}
 }
