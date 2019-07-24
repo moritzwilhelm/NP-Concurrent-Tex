@@ -16,7 +16,7 @@ public class PrinterTask extends Task {
 
 	@Override
 	public void run() {
-		// System.out.println("Started printer! " + segment);
+		// System.out.println("Started printer! ");
 		try {
 			int segmentID = 0;
 
@@ -25,7 +25,7 @@ public class PrinterTask extends Task {
 				synchronized (this.unit.getConfiguration()) {
 					while (!pages.containsKey(segmentID)) {
 						try {
-							wait();
+							this.unit.getConfiguration().wait();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}

@@ -16,7 +16,7 @@ public class Metadata {
 
 	private final Condition terminating;
 
-	private int size;
+	private int size = -1;
 
 	public Metadata(Unit unit, ExecutorService executor, Lock lock, Condition terminating) {
 		this.unit = unit;

@@ -27,7 +27,7 @@ public class SegmentTask extends Task {
 
 	@Override
 	public void run() {
-		// System.out.println("segtask started: " + segment);
+		// System.out.println("segtask started: " + segment.getID());
 		for (List<Item<Renderable>> items : segment.getBlockElements().values()) {
 			this.items.addAll(items);
 		}
@@ -37,12 +37,15 @@ public class SegmentTask extends Task {
 					.renderPages(breakIntoPieces(this.configuration.getBlockParameters(), this.items,
 							this.configuration.getBlockTolerances(), this.configuration.getGeometry().getTextHeight()));
 
+			// System.out.println("Ich bin vor SYNC " + segment.getID());
 			synchronized (this.unit.getConfiguration()) {
 				pages.put(segment.getID(), renderedPages);
-				notify();
+
+				this.unit.getConfiguration().notify();
+
 			}
 
-			// System.out.println("Kann ich printen? " + segment);
+			// System.out.println("Kann ich printen? " + segment.getID());
 			if (this.segment.getID() == 0) {
 				executor.submit(new PrinterTask(metadata, pages, segment));
 			}

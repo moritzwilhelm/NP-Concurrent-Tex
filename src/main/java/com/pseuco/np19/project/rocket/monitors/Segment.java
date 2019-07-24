@@ -16,10 +16,7 @@ public class Segment {
 
 	private int sizeWhenDone = Integer.MAX_VALUE;
 
-	private boolean last = false;
-
 	public Segment(int id) {
-		super();
 		this.id = id;
 	}
 
@@ -41,14 +38,6 @@ public class Segment {
 
 	public synchronized void setSizeWhenDone(int sizeWhenDone) {
 		this.sizeWhenDone = sizeWhenDone;
-	}
-
-	public synchronized void setLast() {
-		this.last = true;
-	}
-
-	public synchronized boolean isLast() {
-		return last;
 	}
 
 	public synchronized boolean isFinished() {
