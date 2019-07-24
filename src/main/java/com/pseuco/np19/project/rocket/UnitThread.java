@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.parser.Parser;
-import com.pseuco.np19.project.rocket.monitors.DocumentMonitor;
+import com.pseuco.np19.project.rocket.monitors.ConcurrentDocument;
 
 public class UnitThread extends Thread {
 	private final ExecutorService executor;
@@ -26,9 +26,10 @@ public class UnitThread extends Thread {
 	public void run() {
 		final Lock lock = new ReentrantLock();
 		final Condition terminating = lock.newCondition();
-		final DocumentMonitor document = new DocumentMonitor(this.unit, this.executor, lock, terminating);
+		final ConcurrentDocument document = new ConcurrentDocument(
+				new Metadata(this.unit, this.executor, lock, terminating));
 
-		executor.submit(new UnitThread(this.unit) {
+		executor.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -36,7 +37,13 @@ public class UnitThread extends Thread {
 					// System.out.println("Parser terminated");
 				} catch (IOException e) {
 					e.printStackTrace();
-					executor.shutdownNow();
+					try {
+						lock.lock();
+						executor.shutdown();
+						terminating.signal();
+					} finally {
+						lock.unlock();
+					}
 				}
 			}
 		});

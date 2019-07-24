@@ -3,20 +3,18 @@ package com.pseuco.np19.project.rocket.tasks;
 import static com.pseuco.np19.project.launcher.breaker.Breaker.breakIntoPieces;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 
+import com.pseuco.np19.project.launcher.Configuration;
 import com.pseuco.np19.project.launcher.breaker.Piece;
 import com.pseuco.np19.project.launcher.breaker.UnableToBreakException;
 import com.pseuco.np19.project.launcher.breaker.item.Item;
-import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.printer.Page;
 import com.pseuco.np19.project.launcher.render.Renderable;
-import com.pseuco.np19.project.rocket.monitors.SegmentsMonitor;
+import com.pseuco.np19.project.rocket.Metadata;
+import com.pseuco.np19.project.rocket.monitors.Segment;
 import com.pseuco.np19.project.slug.tree.block.BlockElement;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
 import com.pseuco.np19.project.slug.tree.block.IBlockVisitor;
@@ -24,14 +22,18 @@ import com.pseuco.np19.project.slug.tree.block.Paragraph;
 
 public class BlockElementTask extends Task implements IBlockVisitor {
 
+	protected final Configuration configuration;
+
 	private final BlockElement element;
 
 	private final int index;
 
-	public BlockElementTask(Unit unit, ExecutorService executor, SegmentsMonitor segments,
-			Map<Integer, List<Page>> pages, AtomicInteger printIndex, BlockElement element, int segment, int index,
-			Lock lock, Condition terminating) {
-		super(unit, executor, segments, pages, printIndex, segment, lock, terminating);
+	protected final List<Item<Renderable>> items = new LinkedList<>();
+
+	public BlockElementTask(Metadata metadata, Map<Integer, List<Page>> pages, Segment segment, BlockElement element,
+			int index) {
+		super(metadata, pages, segment);
+		this.configuration = unit.getConfiguration();
 		this.element = element;
 		this.index = index;
 	}
@@ -44,11 +46,17 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 
 		// falls voll, starte segment runnable
 
-		// System.out.print("Segment: " + segment + " currSize: " + segments.getSegment(segment).getSize() + " / " + segments.getSegment(segment).getSizeWhenDone());
-		if (segments.addBlockElement(segment, index, items)) {
-			// System.out.println("starte segTASK");
-			executor.submit(new SegmentTask(this.unit, this.executor, this.segments, this.pages, this.printIndex,
-					this.segment, this.lock, this.terminating));
+		// System.out.print("Segment: " + segment + " currSize: " +
+		// segments.getSegment(segment).getSize() + " / " +
+		// segments.getSegment(segment).getSizeWhenDone());
+
+		// remove by using ID check (who did finish)
+		synchronized (unit) {
+			segment.put(index, items);
+			if (segment.isFinished()) {
+				// System.out.println("starte segTASK");
+				executor.submit(new SegmentTask(metadata, pages, segment));
+			}
 		}
 	}
 
