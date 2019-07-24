@@ -64,6 +64,6 @@ public class UnitThread extends Thread {
 
 		// System.out.println("Heureka");
 		// System.out.println("");
-		executor.shutdownNow();
+		// executor.shutdownNow();
 	}
 }
