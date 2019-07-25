@@ -41,30 +41,30 @@ public class ConcurrentDocument implements DocumentBuilder {
 
 	@Override
 	public void appendForcedPageBreak(Position position) {
-		segments.get(this.currentSegment).setSizeWhenDone(this.currentIndex + 1);
-		executor.submit(new BlockElementTask(this.metadata, this.pages, segments.get(currentSegment),
-				new ForcedPageBreak(), this.currentIndex));
+		segments.get(currentSegment).setSizeWhenDone(currentIndex + 1);
+		executor.submit(new BlockElementTask(metadata, pages, segments.get(currentSegment), new ForcedPageBreak(),
+				currentIndex));
 
-		this.currentSegment++;
-		this.currentIndex = 0;
-		this.segments.put(currentSegment, new Segment(currentSegment));
+		currentSegment++;
+		currentIndex = 0;
+		segments.put(currentSegment, new Segment(currentSegment));
 		// System.out.println(" naechstes segment " + currentSegment);
 	}
 
 	@Override
 	public ParagraphBuilder appendParagraph(Position position) {
-		Paragraph paragraph = new ConcurrentParagraph(this.metadata, this.pages, segments.get(currentSegment),
-				this.currentIndex);
-		this.currentIndex++;
+		Paragraph paragraph = new ConcurrentParagraph(metadata, pages, segments.get(currentSegment), currentIndex);
+		currentIndex++;
 		return paragraph;
 	}
 
 	@Override
 	public void finish() {
 		// System.out.println("parser finish");
-		segments.get(this.currentSegment).setSizeWhenDone(currentIndex + 1);
+		segments.get(currentSegment).setSizeWhenDone(currentIndex + 1);
 		metadata.setSize(currentSegment + 1);
-		executor.submit(new BlockElementTask(this.metadata, this.pages, segments.get(currentSegment),
-				new ForcedPageBreak(), this.currentIndex));
+
+		executor.submit(new BlockElementTask(metadata, pages, segments.get(currentSegment), new ForcedPageBreak(),
+				currentIndex));
 	}
 }

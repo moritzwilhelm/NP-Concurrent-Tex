@@ -16,13 +16,13 @@ import com.pseuco.np19.project.rocket.monitors.Segment;
 
 public class SegmentTask extends Task {
 
-	protected final Configuration configuration;
+	private final Configuration configuration;
 
-	protected final List<Item<Renderable>> items = new LinkedList<>();
+	private final List<Item<Renderable>> items = new LinkedList<>();
 
 	protected SegmentTask(Metadata metadata, Map<Integer, List<Page>> pages, Segment segment) {
 		super(metadata, pages, segment);
-		this.configuration = unit.getConfiguration();
+		configuration = unit.getConfiguration();
 	}
 
 	@Override
@@ -33,36 +33,31 @@ public class SegmentTask extends Task {
 		}
 
 		try {
-			List<Page> renderedPages = this.unit.getPrinter()
-					.renderPages(breakIntoPieces(this.configuration.getBlockParameters(), this.items,
-							this.configuration.getBlockTolerances(), this.configuration.getGeometry().getTextHeight()));
+			List<Page> renderedPages = unit.getPrinter().renderPages(breakIntoPieces(configuration.getBlockParameters(),
+					this.items, configuration.getBlockTolerances(), configuration.getGeometry().getTextHeight()));
 
 			// System.out.println("Ich bin vor SYNC " + segment.getID());
-			synchronized (this.unit.getConfiguration()) {
+			synchronized (configuration) {
 				pages.put(segment.getID(), renderedPages);
 
-				this.unit.getConfiguration().notify();
+				configuration.notify();
 
 			}
 
 			// System.out.println("Kann ich printen? " + segment.getID());
-			if (this.segment.getID() == 0) {
+			if (segment.getID() == 0) {
 				executor.submit(new PrinterTask(metadata, pages, segment));
 			}
 
 			// System.out.println("seg " + segment + " finished");
 
 		} catch (UnableToBreakException ignored) {
-			try {
-				this.unit.getPrinter().printErrorPage();
-				this.unit.getPrinter().finishDocument();
-				System.err.println("Unable to break lines!");
-			} catch (Throwable error) {
-				error.printStackTrace();
-			}
+			System.err.println("Unable to break lines!");
+			metadata.setBroken();
+
 			try {
 				lock.lock();
-				this.executor.shutdown();
+				executor.shutdown();
 				terminating.signal();
 			} finally {
 				lock.unlock();

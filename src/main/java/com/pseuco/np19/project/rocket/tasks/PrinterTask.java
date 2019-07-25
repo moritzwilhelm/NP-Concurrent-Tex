@@ -22,17 +22,17 @@ public class PrinterTask extends Task {
 
 			while (segmentID != metadata.getSize()) {
 
-				synchronized (this.unit.getConfiguration()) {
+				synchronized (unit.getConfiguration()) {
 					while (!pages.containsKey(segmentID)) {
 						try {
-							this.unit.getConfiguration().wait();
+							unit.getConfiguration().wait();
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 
-				this.unit.getPrinter().printPages(pages.get(segmentID));
+				unit.getPrinter().printPages(pages.get(segmentID));
 
 				segmentID++;
 			}
@@ -41,11 +41,11 @@ public class PrinterTask extends Task {
 			// segments.getSegment(segment).isLast());
 			// if (segment.isLast()) {
 			// System.out.println("I am the last printer: " + segment);
-			this.unit.getPrinter().finishDocument();
+			unit.getPrinter().finishDocument();
 
 			try {
 				lock.lock();
-				this.executor.shutdown();
+				executor.shutdown();
 				terminating.signal();
 			} finally {
 				lock.unlock();

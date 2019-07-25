@@ -12,22 +12,30 @@ import com.pseuco.np19.project.launcher.parser.Parser;
 import com.pseuco.np19.project.rocket.monitors.ConcurrentDocument;
 
 public class UnitThread extends Thread {
-	private final ExecutorService executor;
+
+	private final Metadata metadata;
 
 	private final Unit unit;
+
+	private final ExecutorService executor;
+
+	private final Lock lock;
+
+	private final Condition terminating;
 
 	public UnitThread(Unit unit) {
 		this.unit = unit;
 		// this.executor = Executors.newCachedThreadPool();
 		this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		this.lock = new ReentrantLock();
+		this.terminating = lock.newCondition();
+
+		this.metadata = new Metadata(this.unit, this.executor, lock, terminating);
 	}
 
 	@Override
 	public void run() {
-		final Lock lock = new ReentrantLock();
-		final Condition terminating = lock.newCondition();
-		final ConcurrentDocument document = new ConcurrentDocument(
-				new Metadata(this.unit, this.executor, lock, terminating));
+		final ConcurrentDocument document = new ConcurrentDocument(metadata);
 
 		executor.submit(new Runnable() {
 			@Override
@@ -65,5 +73,14 @@ public class UnitThread extends Thread {
 		// System.out.println("Heureka");
 		// System.out.println("");
 		executor.shutdownNow();
+
+		if (metadata.isBroken()) {
+			try {
+				unit.getPrinter().printErrorPage();
+				unit.getPrinter().finishDocument();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
