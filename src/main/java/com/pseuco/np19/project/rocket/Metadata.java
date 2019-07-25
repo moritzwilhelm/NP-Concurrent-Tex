@@ -18,6 +18,8 @@ public class Metadata {
 
 	private int size = -1;
 
+	private boolean broken = false;
+
 	public Metadata(Unit unit, ExecutorService executor, Lock lock, Condition terminating) {
 		this.unit = unit;
 		this.executor = executor;
@@ -49,4 +51,11 @@ public class Metadata {
 		return terminating;
 	}
 
+	public synchronized void setBroken() {
+		broken = true;
+	}
+
+	public synchronized boolean isBroken() {
+		return broken;
+	}
 }

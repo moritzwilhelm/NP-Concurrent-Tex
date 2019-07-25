@@ -2,7 +2,6 @@ package com.pseuco.np19.project.rocket.tasks;
 
 import static com.pseuco.np19.project.launcher.breaker.Breaker.breakIntoPieces;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +21,13 @@ import com.pseuco.np19.project.slug.tree.block.Paragraph;
 
 public class BlockElementTask extends Task implements IBlockVisitor {
 
-	protected final Configuration configuration;
+	private final Configuration configuration;
 
 	private final BlockElement element;
 
 	private final int index;
 
-	protected final List<Item<Renderable>> items = new LinkedList<>();
+	private final List<Item<Renderable>> items = new LinkedList<>();
 
 	public BlockElementTask(Metadata metadata, Map<Integer, List<Page>> pages, Segment segment, BlockElement element,
 			int index) {
@@ -73,16 +72,11 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 			this.configuration.getBlockFormatter().pushParagraph(this.items::add, lines);
 		} catch (UnableToBreakException error) {
 			System.err.println("Unable to break paragraph!");
-			try {
-				this.unit.getPrinter().printErrorPage();
-				this.unit.getPrinter().finishDocument();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			metadata.setBroken();
 
 			try {
 				lock.lock();
-				this.executor.shutdown();
+				executor.shutdown();
 				terminating.signal();
 			} finally {
 				lock.unlock();
