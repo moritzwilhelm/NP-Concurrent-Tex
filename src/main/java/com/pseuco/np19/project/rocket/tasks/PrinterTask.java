@@ -5,35 +5,33 @@ import java.util.List;
 import java.util.Map;
 
 import com.pseuco.np19.project.launcher.printer.Page;
+import com.pseuco.np19.project.launcher.printer.Printer;
 import com.pseuco.np19.project.rocket.Metadata;
 import com.pseuco.np19.project.rocket.monitors.Segment;
 
 public class PrinterTask extends Task {
 
+	private final Printer printer;
+
 	protected PrinterTask(Metadata metadata, Map<Integer, List<Page>> pages, Segment segment) {
 		super(metadata, pages, segment);
+		this.printer = unit.getPrinter();
 	}
 
 	@Override
 	public void run() {
 		// System.out.println("Started printer! ");
 		try {
-			int segmentID = 0;
+			int segmentID = segment.getID();
 
-			while (segmentID != metadata.getSize()) {
-
-				synchronized (unit.getConfiguration()) {
-					while (!pages.containsKey(segmentID)) {
-						try {
-							unit.getConfiguration().wait();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-				}
-
-				unit.getPrinter().printPages(pages.get(segmentID));
+			while (pages.containsKey(segmentID)) {
+				printer.printPages(pages.get(segmentID));
 				segmentID++;
+			}
+
+			if (segmentID != metadata.getSize()) {
+				metadata.setPrintIndex(segmentID);
+				return;
 			}
 
 			// System.out.println("segment: " + segment + " last: " +
