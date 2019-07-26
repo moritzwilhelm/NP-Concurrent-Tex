@@ -46,7 +46,7 @@ public class SegmentTask extends Task {
 
 			// System.out.println("Kann ich printen? " + segment.getID());
 			if (segment.getID() == 0) {
-				new PrinterTask(metadata, pages, segment).run();
+				executor.submit(new PrinterTask(metadata, pages, segment));
 			}
 
 			// System.out.println("seg " + segment + " finished");

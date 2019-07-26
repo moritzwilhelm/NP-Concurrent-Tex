@@ -50,18 +50,13 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 		// segments.getSegment(segment).getSizeWhenDone());
 
 		// remove by using ID check (who did finish)
-		boolean finished = false;
-
 		synchronized (unit) {
 			segment.put(index, items);
-			finished = segment.isFinished();
+			if (segment.isFinished()) {
+				// System.out.println("starte segTASK");
+				executor.submit(new SegmentTask(metadata, pages, segment));
+			}
 		}
-
-		if (finished) {
-			// System.out.println("starte segTASK");
-			new SegmentTask(metadata, pages, segment).run();
-		}
-
 	}
 
 	public void visit(Paragraph paragraph) {
