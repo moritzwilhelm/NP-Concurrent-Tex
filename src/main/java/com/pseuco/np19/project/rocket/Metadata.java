@@ -18,6 +18,8 @@ public class Metadata {
 
 	private int size = -1;
 
+	private int printIndex = 0;
+
 	private boolean broken = false;
 
 	public Metadata(Unit unit, ExecutorService executor, Lock lock, Condition terminating) {
@@ -57,5 +59,13 @@ public class Metadata {
 
 	public synchronized boolean isBroken() {
 		return broken;
+	}
+
+	public synchronized int getPrintIndex() {
+		return printIndex;
+	}
+
+	public synchronized void setPrintIndex(int printIndex) {
+		this.printIndex = printIndex;
 	}
 }

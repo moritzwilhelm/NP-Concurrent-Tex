@@ -37,15 +37,10 @@ public class SegmentTask extends Task {
 					this.items, configuration.getBlockTolerances(), configuration.getGeometry().getTextHeight()));
 
 			// System.out.println("Ich bin vor SYNC " + segment.getID());
-			synchronized (configuration) {
-				pages.put(segment.getID(), renderedPages);
-
-				configuration.notify();
-
-			}
+			pages.put(segment.getID(), renderedPages);
 
 			// System.out.println("Kann ich printen? " + segment.getID());
-			if (segment.getID() == 0) {
+			if (segment.getID() == metadata.getPrintIndex()) {
 				new PrinterTask(metadata, pages, segment).run();
 			}
 
