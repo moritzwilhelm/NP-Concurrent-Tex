@@ -33,7 +33,6 @@ public class PrinterTask extends Task {
 				}
 
 				unit.getPrinter().printPages(pages.get(segmentID));
-
 				segmentID++;
 			}
 

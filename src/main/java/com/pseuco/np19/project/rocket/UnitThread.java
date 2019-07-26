@@ -28,7 +28,7 @@ public class UnitThread extends Thread {
 	public UnitThread(Unit unit) {
 		this.unit = unit;
 		// this.executor = Executors.newCachedThreadPool();
-		this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		this.lock = new ReentrantLock();
 		this.terminating = lock.newCondition();
 
