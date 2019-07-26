@@ -32,11 +32,6 @@ public class Segment {
 		blockElements.put(index, items);
 	}
 
-	/*
-	 * public synchronized List<Item<Renderable>> get(int index) { return
-	 * blockElements.get(index); }
-	 */
-
 	public synchronized void setSizeWhenDone(int sizeWhenDone) {
 		this.sizeWhenDone = sizeWhenDone;
 	}
