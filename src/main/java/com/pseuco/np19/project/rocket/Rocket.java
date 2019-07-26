@@ -16,8 +16,8 @@ public class Rocket {
 			if (units.isEmpty()) {
 				CLI.printUsage(System.out);
 			}
-			// System.out.println("");
-			// System.out.println("num units: " + units.size());
+
+			// Start processing for each unit concurrently
 			for (Unit unit : units) {
 				Thread unitThread = new UnitThread(unit);
 				threadList.add(unitThread);
@@ -25,10 +25,11 @@ public class Rocket {
 				unitThread.start();
 			}
 
+			// wait until all UnitThreads have terminated
 			for (Thread thread : threadList) {
 				thread.join();
-				// System.out.println("unit terminated");
 			}
+
 			System.exit(0);
 		} catch (CLIException error) {
 			System.err.println(error.getMessage());

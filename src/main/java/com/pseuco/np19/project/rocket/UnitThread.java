@@ -19,6 +19,8 @@ public class UnitThread extends Thread {
 
 	private final ExecutorService executor;
 
+	private final ConcurrentDocument document;
+
 	private final Lock lock;
 
 	private final Condition terminating;
@@ -31,12 +33,14 @@ public class UnitThread extends Thread {
 		this.terminating = lock.newCondition();
 
 		this.metadata = new Metadata(this.unit, this.executor, lock, terminating);
+
+		this.document = new ConcurrentDocument(metadata);
 	}
 
 	@Override
 	public void run() {
-		final ConcurrentDocument document = new ConcurrentDocument(metadata);
 
+		// Submit ParserRunnable to executor
 		executor.submit(new Runnable() {
 			@Override
 			public void run() {
@@ -45,6 +49,8 @@ public class UnitThread extends Thread {
 					// System.out.println("Parser terminated");
 				} catch (IOException e) {
 					e.printStackTrace();
+
+					// shutdown executor on error
 					try {
 						lock.lock();
 						executor.shutdown();
@@ -56,6 +62,11 @@ public class UnitThread extends Thread {
 			}
 		});
 
+		/*
+		 * wait until shutdown: 
+		 * 1) someone encountered an error 
+		 * 2) printer printed last page
+		 */
 		try {
 			lock.lock();
 			while (!executor.isShutdown()) {
@@ -72,9 +83,11 @@ public class UnitThread extends Thread {
 
 		// System.out.println("Heureka");
 		// System.out.println("");
-
+		
+		// finally terminate all running Threads (none if no error was encountered)
 		executor.shutdownNow();
 
+		// print error page in case of error
 		if (metadata.isBroken()) {
 			try {
 				unit.getPrinter().printErrorPage();
