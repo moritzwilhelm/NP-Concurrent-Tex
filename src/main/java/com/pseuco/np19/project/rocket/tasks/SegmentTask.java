@@ -28,9 +28,16 @@ public class SegmentTask extends Task {
 	@Override
 	public void run() {
 		// System.out.println("segtask started: " + segment.getID());
-		for (List<Item<Renderable>> items : segment.getBlockElements().values()) {
-			this.items.addAll(items);
+		Map<Integer, List<Item<Renderable>>> items = segment.getBlockElements();
+		
+		for (int i = 0; i < items.size(); i++) {
+			this.items.addAll(items.get(i));
 		}
+		
+		/*
+		 * for (List<Item<Renderable>> items : segment.getBlockElements().values()) {
+		 * this.items.addAll(items); }
+		 */
 
 		try {
 			List<Page> renderedPages = unit.getPrinter().renderPages(breakIntoPieces(configuration.getBlockParameters(),
