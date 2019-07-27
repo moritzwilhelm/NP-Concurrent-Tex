@@ -7,10 +7,16 @@ import com.pseuco.np19.project.launcher.cli.CLI;
 import com.pseuco.np19.project.launcher.cli.CLIException;
 import com.pseuco.np19.project.launcher.cli.Unit;
 
+/**
+ * The concurrent implementation of our typesetting system.
+ */
+
 public class Rocket {
 
 	public static void main(String[] args) {
+
 		List<Thread> threadList = new ArrayList<Thread>();
+
 		try {
 			List<Unit> units = CLI.parseArgs(args);
 			if (units.isEmpty()) {
@@ -21,7 +27,6 @@ public class Rocket {
 			for (Unit unit : units) {
 				Thread unitThread = new UnitThread(unit);
 				threadList.add(unitThread);
-				// System.out.println("start unit thread");
 				unitThread.start();
 			}
 

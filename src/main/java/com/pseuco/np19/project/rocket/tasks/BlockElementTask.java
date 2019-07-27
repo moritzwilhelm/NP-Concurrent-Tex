@@ -12,12 +12,16 @@ import com.pseuco.np19.project.launcher.breaker.UnableToBreakException;
 import com.pseuco.np19.project.launcher.breaker.item.Item;
 import com.pseuco.np19.project.launcher.printer.Page;
 import com.pseuco.np19.project.launcher.render.Renderable;
-import com.pseuco.np19.project.rocket.Metadata;
+import com.pseuco.np19.project.rocket.monitors.Metadata;
 import com.pseuco.np19.project.rocket.monitors.Segment;
 import com.pseuco.np19.project.slug.tree.block.BlockElement;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
 import com.pseuco.np19.project.slug.tree.block.IBlockVisitor;
 import com.pseuco.np19.project.slug.tree.block.Paragraph;
+
+/**
+ * Task which processes a BlockElement
+ */
 
 public class BlockElementTask extends Task implements IBlockVisitor {
 
@@ -40,29 +44,24 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 	@Override
 	public void run() {
 
-		// go to visit
+		// execute corresponding visit
 		element.accept(this);
 
-		// falls voll, starte segment runnable
-
-		// System.out.print("Segment: " + segment + " currSize: " +
-		// segments.getSegment(segment).getSize() + " / " +
-		// segments.getSegment(segment).getSizeWhenDone());
-
-		// remove by using ID check (who did finish)
 		boolean finished = false;
 
-		synchronized (unit) {
+		synchronized (segment) {
 			segment.put(index, items);
 			finished = segment.isFinished();
 		}
 
 		if (finished) {
-			// System.out.println("starte segTASK");
-			if(metadata.isBroken()) {
+
+			// abort if an error was encountered (by any other Thread)
+			if (metadata.isBroken()) {
 				return;
 			}
-			
+
+			// simulate/transform into a SegmentTask Runnable
 			new SegmentTask(metadata, pages, segment).run();
 		}
 
@@ -83,13 +82,8 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 			System.err.println("Unable to break paragraph!");
 			metadata.setBroken();
 
-			try {
-				lock.lock();
-				executor.shutdown();
-				terminating.signal();
-			} finally {
-				lock.unlock();
-			}
+			// signal waiting UnitThread that an error was encountered
+			metadata.initiateTermination();
 		}
 	}
 

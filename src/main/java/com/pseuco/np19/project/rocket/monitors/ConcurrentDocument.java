@@ -10,15 +10,15 @@ import com.pseuco.np19.project.launcher.parser.ParagraphBuilder;
 import com.pseuco.np19.project.launcher.parser.Position;
 import com.pseuco.np19.project.launcher.printer.Page;
 import com.pseuco.np19.project.rocket.ConcurrentParagraph;
-import com.pseuco.np19.project.rocket.Metadata;
 import com.pseuco.np19.project.rocket.tasks.BlockElementTask;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
 import com.pseuco.np19.project.slug.tree.block.Paragraph;
 
 /**
- * A {@link DocumentBuilder} building an in-memory representation of an input
- * document.
+ * A concurrent {@link DocumentBuilder} building an in-memory representation of
+ * an input document.
  */
+
 public class ConcurrentDocument implements DocumentBuilder {
 
 	private final Metadata metadata;
@@ -41,14 +41,17 @@ public class ConcurrentDocument implements DocumentBuilder {
 
 	@Override
 	public void appendForcedPageBreak(Position position) {
+		// set size of current segment
 		segments.get(currentSegment).setSizeWhenDone(currentIndex + 1);
+
+		// submit new ForcedPageBreaktask to end the current segment
 		executor.submit(new BlockElementTask(metadata, pages, segments.get(currentSegment), new ForcedPageBreak(),
 				currentIndex));
 
-		currentSegment++;
+		// start new segment and reset currentIndex
+		currentSegment += 1;
 		currentIndex = 0;
 		segments.put(currentSegment, new Segment(currentSegment));
-		// System.out.println(" naechstes segment " + currentSegment);
 	}
 
 	@Override
@@ -60,10 +63,12 @@ public class ConcurrentDocument implements DocumentBuilder {
 
 	@Override
 	public void finish() {
-		// System.out.println("parser finish");
+		// set size of last segment
 		segments.get(currentSegment).setSizeWhenDone(currentIndex + 1);
-		metadata.setSize(currentSegment + 1);
 
+		metadata.setNumSegments(currentSegment + 1);
+
+		// submit new ForcedPageBreaktask to end the last segment
 		executor.submit(new BlockElementTask(metadata, pages, segments.get(currentSegment), new ForcedPageBreak(),
 				currentIndex));
 	}

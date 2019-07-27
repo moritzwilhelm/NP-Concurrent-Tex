@@ -6,8 +6,12 @@ import java.util.Map;
 
 import com.pseuco.np19.project.launcher.printer.Page;
 import com.pseuco.np19.project.launcher.printer.Printer;
-import com.pseuco.np19.project.rocket.Metadata;
+import com.pseuco.np19.project.rocket.monitors.Metadata;
 import com.pseuco.np19.project.rocket.monitors.Segment;
+
+/**
+ * Task which prints rendered pages
+ */
 
 public class PrinterTask extends Task {
 
@@ -20,37 +24,37 @@ public class PrinterTask extends Task {
 
 	@Override
 	public void run() {
-		// System.out.println("Started printer! ");
+
 		try {
 			int segmentID = segment.getID();
 
+			// while current segment pages are rendered, print them
 			while (pages.containsKey(segmentID)) {
 				printer.printPages(pages.get(segmentID));
 				segmentID++;
 			}
 
-			if (segmentID != metadata.getSize()) {
+			/*
+			 * set PrintIndex to segmentID if current to be printed pages have not been
+			 * rendered yet
+			 */
+			if (segmentID != metadata.getNumSegments()) {
 				metadata.setPrintIndex(segmentID);
 				return;
 			}
 
-			// System.out.println("segment: " + segment + " last: " +
-			// segments.getSegment(segment).isLast());
-			// if (segment.isLast()) {
-			// System.out.println("I am the last printer: " + segment);
+			// finish processing if all pages were printed
 			unit.getPrinter().finishDocument();
 
-			try {
-				lock.lock();
-				executor.shutdown();
-				terminating.signal();
-			} finally {
-				lock.unlock();
-			}
-			// }
+			// signal waiting UnitThread that processing has finished
+			metadata.initiateTermination();
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			metadata.setBroken();
+
+			// signal waiting UnitThread that an error was encountered (prevents a deadlock)
+			metadata.initiateTermination();
 		}
 	}
 

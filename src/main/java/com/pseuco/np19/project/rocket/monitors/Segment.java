@@ -7,14 +7,17 @@ import java.util.Map;
 import com.pseuco.np19.project.launcher.breaker.item.Item;
 import com.pseuco.np19.project.launcher.render.Renderable;
 
-// tuple consisting of HashMap and size(when completely filled)
+/**
+ * Tuple consisting of id, HashMap of BlockElements and size(when completely filled)
+ */
+
 public class Segment {
 
 	private final int id;
 
 	private final Map<Integer, List<Item<Renderable>>> blockElements = new HashMap<>();
 
-	private int sizeWhenDone = Integer.MAX_VALUE;
+	private int sizeWhenDone = -1;
 
 	public Segment(int id) {
 		this.id = id;

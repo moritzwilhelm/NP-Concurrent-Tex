@@ -4,9 +4,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.pseuco.np19.project.launcher.printer.Page;
+import com.pseuco.np19.project.rocket.monitors.Metadata;
 import com.pseuco.np19.project.rocket.monitors.Segment;
 import com.pseuco.np19.project.rocket.tasks.BlockElementTask;
 import com.pseuco.np19.project.slug.tree.block.Paragraph;
+
+/**
+ * A concurrent extension to the Paragraph class
+ */
 
 public class ConcurrentParagraph extends Paragraph {
 	private final Metadata metadata;
@@ -26,6 +31,7 @@ public class ConcurrentParagraph extends Paragraph {
 
 	@Override
 	public void finish() {
+		// submit Paragraph for processing once parser has finished parsing it
 		metadata.getExecutor().submit(new BlockElementTask(metadata, this.pages, this.segment, this, this.index));
 	}
 }

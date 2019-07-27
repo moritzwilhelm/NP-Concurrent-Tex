@@ -11,8 +11,12 @@ import com.pseuco.np19.project.launcher.breaker.UnableToBreakException;
 import com.pseuco.np19.project.launcher.breaker.item.Item;
 import com.pseuco.np19.project.launcher.printer.Page;
 import com.pseuco.np19.project.launcher.render.Renderable;
-import com.pseuco.np19.project.rocket.Metadata;
+import com.pseuco.np19.project.rocket.monitors.Metadata;
 import com.pseuco.np19.project.rocket.monitors.Segment;
+
+/**
+ * Task which processes a Segment
+ */
 
 public class SegmentTask extends Task {
 
@@ -27,47 +31,38 @@ public class SegmentTask extends Task {
 
 	@Override
 	public void run() {
-		// System.out.println("segtask started: " + segment.getID());
+
 		Map<Integer, List<Item<Renderable>>> items = segment.getBlockElements();
-		
+
+		// concatenate all itemsLists to one containing all
 		for (int i = 0; i < items.size(); i++) {
 			this.items.addAll(items.get(i));
 		}
-		
-		/*
-		 * for (List<Item<Renderable>> items : segment.getBlockElements().values()) {
-		 * this.items.addAll(items); }
-		 */
 
 		try {
+			// distribute BlockElements on pages and render them
 			List<Page> renderedPages = unit.getPrinter().renderPages(breakIntoPieces(configuration.getBlockParameters(),
 					this.items, configuration.getBlockTolerances(), configuration.getGeometry().getTextHeight()));
 
-			// System.out.println("Ich bin vor SYNC " + segment.getID());
 			pages.put(segment.getID(), renderedPages);
 
-			// System.out.println("Kann ich printen? " + segment.getID());
 			if (segment.getID() == metadata.getPrintIndex()) {
-				if(metadata.isBroken()) {
+
+				// abort if an error was encountered (by any other Thread)
+				if (metadata.isBroken()) {
 					return;
 				}
-				
+
+				// simulate/transform into a PrinterTask Runnable
 				new PrinterTask(metadata, pages, segment).run();
 			}
-
-			// System.out.println("seg " + segment + " finished");
 
 		} catch (UnableToBreakException ignored) {
 			System.err.println("Unable to break lines!");
 			metadata.setBroken();
 
-			try {
-				lock.lock();
-				executor.shutdown();
-				terminating.signal();
-			} finally {
-				lock.unlock();
-			}
+			// signal waiting UnitThread that an error was encountered
+			metadata.initiateTermination();
 		}
 	}
 
