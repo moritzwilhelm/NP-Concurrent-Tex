@@ -74,7 +74,7 @@ public class Metadata {
 	public synchronized void initiateTermination() {
 		try {
 			lock.lock();
-			executor.shutdown();		// prevent submitting of any new Runnable
+			executor.shutdown();		// prevent submission of any new Runnable
 			terminating.signal();
 		} finally {
 			lock.unlock();

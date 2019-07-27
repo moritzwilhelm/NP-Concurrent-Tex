@@ -1,4 +1,4 @@
-package com.pseuco.np19.project.rocket.monitors;
+package com.pseuco.np19.project.rocket;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +9,8 @@ import com.pseuco.np19.project.launcher.parser.DocumentBuilder;
 import com.pseuco.np19.project.launcher.parser.ParagraphBuilder;
 import com.pseuco.np19.project.launcher.parser.Position;
 import com.pseuco.np19.project.launcher.printer.Page;
-import com.pseuco.np19.project.rocket.ConcurrentParagraph;
+import com.pseuco.np19.project.rocket.monitors.Metadata;
+import com.pseuco.np19.project.rocket.monitors.Segment;
 import com.pseuco.np19.project.rocket.tasks.BlockElementTask;
 import com.pseuco.np19.project.slug.tree.block.ForcedPageBreak;
 import com.pseuco.np19.project.slug.tree.block.Paragraph;

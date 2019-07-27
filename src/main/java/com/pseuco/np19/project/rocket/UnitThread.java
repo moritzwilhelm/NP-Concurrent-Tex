@@ -9,7 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.pseuco.np19.project.launcher.cli.Unit;
 import com.pseuco.np19.project.launcher.parser.Parser;
-import com.pseuco.np19.project.rocket.monitors.ConcurrentDocument;
 import com.pseuco.np19.project.rocket.monitors.Metadata;
 
 /**
@@ -78,7 +77,7 @@ public class UnitThread extends Thread {
 			lock.unlock();
 		}
 		
-		// finally terminate all running Threads (none, if no error was encountered)
+		// finally (try to) stop all running tasks (none, if no error was encountered)
 		executor.shutdownNow();
 
 		// print error page in case of error
