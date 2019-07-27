@@ -30,6 +30,12 @@ public class PrinterTask extends Task {
 
 			// while current segment pages are rendered, print them
 			while (pages.containsKey(segmentID)) {
+
+				// abort if an error was encountered (by any other Thread)
+				if (metadata.isBroken()) {
+					return;
+				}
+
 				printer.printPages(pages.get(segmentID));
 				segmentID++;
 			}
