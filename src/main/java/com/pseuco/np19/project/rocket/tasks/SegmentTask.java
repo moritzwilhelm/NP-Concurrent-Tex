@@ -48,6 +48,10 @@ public class SegmentTask extends Task {
 
 			// System.out.println("Kann ich printen? " + segment.getID());
 			if (segment.getID() == metadata.getPrintIndex()) {
+				if(metadata.isBroken()) {
+					return;
+				}
+				
 				new PrinterTask(metadata, pages, segment).run();
 			}
 

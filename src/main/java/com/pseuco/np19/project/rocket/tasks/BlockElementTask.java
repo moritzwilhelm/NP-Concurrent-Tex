@@ -59,6 +59,10 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 
 		if (finished) {
 			// System.out.println("starte segTASK");
+			if(metadata.isBroken()) {
+				return;
+			}
+			
 			new SegmentTask(metadata, pages, segment).run();
 		}
 
