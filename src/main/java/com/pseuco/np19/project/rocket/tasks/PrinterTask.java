@@ -26,26 +26,31 @@ public class PrinterTask extends Task {
 	public void run() {
 
 		try {
-			int segmentID = segment.getID();
-
+			int segmentID = metadata.getPrintIndex();
+			boolean canPrint;
 			// while current segment pages are rendered, print them
-			while (pages.containsKey(segmentID)) {
+			do {
 
 				// abort if an error was encountered (by any other Thread)
 				if (metadata.isBroken()) {
 					return;
 				}
 
-				printer.printPages(pages.get(segmentID));
-				segmentID++;
-			}
+				synchronized (pages) {
+					printer.printPages(pages.get(segmentID));
+					canPrint = pages.containsKey(++segmentID);
+					if (!canPrint) {
+						metadata.setPrintIndex(segmentID);
+					}
+				}
+			} while (canPrint);
 
 			/*
 			 * set PrintIndex to segmentID if current to be printed pages have not been
 			 * rendered yet
 			 */
 			if (segmentID != metadata.getNumSegments()) {
-				metadata.setPrintIndex(segmentID);
+				// metadata.setPrintIndex(segmentID);
 				return;
 			}
 
@@ -64,4 +69,13 @@ public class PrinterTask extends Task {
 		}
 	}
 
+	public boolean canPrintElseSetPrintIndex(int index) {
+		synchronized (pages) {
+			if (!pages.containsKey(index)) {
+				metadata.setPrintIndex(index);
+				return false;
+			}
+			return true;
+		}
+	}
 }
