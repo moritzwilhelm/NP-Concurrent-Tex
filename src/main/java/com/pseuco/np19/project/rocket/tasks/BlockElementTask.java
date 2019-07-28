@@ -47,14 +47,14 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 		// execute corresponding visit
 		element.accept(this);
 
-		boolean finished = false;
+		boolean complete = false;
 
 		synchronized (segment) {
 			segment.put(index, items);
-			finished = segment.isFinished();
+			complete = segment.isComplete();
 		}
 
-		if (finished) {
+		if (complete) {
 
 			// abort if an error was encountered (by any other Thread)
 			if (metadata.isBroken()) {

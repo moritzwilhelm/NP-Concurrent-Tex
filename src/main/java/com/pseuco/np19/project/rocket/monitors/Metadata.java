@@ -24,13 +24,14 @@ public class Metadata {
 	// number of segments
 	private int numSegments = -1;
 
+	// true if an error was encountered while processing the unit
+	private boolean broken = false;
+
 	// index of the currently to be printed page
 	private int printIndex = 0;
 
-	private HashSet<Integer> finishedSegments = new HashSet<>();
-
-	// true if an error was encountered while processing the unit
-	private boolean broken = false;
+	// set of Segments which are rendered but not yet printed
+	private HashSet<Integer> notYetPrintedSegments = new HashSet<>();
 
 	public Metadata(Unit unit, ExecutorService executor, Lock lock, Condition terminating) {
 		this.unit = unit;
@@ -55,27 +56,6 @@ public class Metadata {
 		this.numSegments = numSegments;
 	}
 
-	public synchronized int getPrintIndex() {
-		return printIndex;
-	}
-
-	/*
-	 * adds SegmentID to finishedSegments and returns if this segment may be printed
-	 */
-	public synchronized boolean isNextToBePrinted(int ID) {
-		finishedSegments.add(ID);
-		return ID == printIndex;
-	}
-
-	/*
-	 * sets printIndex to given value and returns if the segment already passed the
-	 * isNextToBePrinted check
-	 */
-	public synchronized boolean setPrintIndexAndIsPresent(int printIndex) {
-		this.printIndex = printIndex;
-		return finishedSegments.contains(printIndex);
-	}
-
 	public synchronized boolean isBroken() {
 		return broken;
 	}
@@ -84,13 +64,38 @@ public class Metadata {
 		broken = true;
 	}
 
+	public synchronized int getPrintIndex() {
+		return printIndex;
+	}
+
+	/*
+	 * returns if this segments may be printed and adds SegmentID to
+	 * finishedSegments if this is currently not the case
+	 */
+	public synchronized boolean isNextToBePrinted(int ID) {
+		boolean isNext;
+		if (!(isNext = ID == printIndex)) {
+			notYetPrintedSegments.add(ID);
+		}
+		return isNext;
+	}
+
+	/*
+	 * sets printIndex to given value and returns if the segment already passed the
+	 * isNextToBePrinted check but has not been printed yet
+	 */
+	public synchronized boolean setPrintIndexAndIsPresent(int printIndex) {
+		this.printIndex = printIndex;
+		return notYetPrintedSegments.contains(printIndex);
+	}
+
 	/**
 	 * signal waiting UnitThread that it can start termination
 	 */
 	public synchronized void initiateTermination() {
 		try {
 			lock.lock();
-			executor.shutdown(); // prevent submission of any new Runnable
+			executor.shutdown(); 	// prevent submission of any new Runnable
 			terminating.signal();
 		} finally {
 			lock.unlock();

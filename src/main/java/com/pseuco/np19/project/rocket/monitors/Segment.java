@@ -39,7 +39,7 @@ public class Segment {
 		this.sizeWhenDone = sizeWhenDone;
 	}
 
-	public synchronized boolean isFinished() {
+	public synchronized boolean isComplete() {
 		return blockElements.size() == sizeWhenDone;
 	}
 
