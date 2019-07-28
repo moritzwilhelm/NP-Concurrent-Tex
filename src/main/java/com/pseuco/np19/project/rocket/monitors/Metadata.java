@@ -51,8 +51,8 @@ public class Metadata {
 		return numSegments;
 	}
 
-	public synchronized void setNumSegments(int size) {
-		numSegments = size;
+	public synchronized void setNumSegments(int numSegments) {
+		this.numSegments = numSegments;
 	}
 	
 	public synchronized int getPrintIndex() {
