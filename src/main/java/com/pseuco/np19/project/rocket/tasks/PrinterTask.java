@@ -45,7 +45,9 @@ public class PrinterTask extends Task {
 			 * rendered yet
 			 */
 			if (segmentID != metadata.getNumSegments()) {
-				metadata.setPrintIndex(segmentID);
+				if (metadata.setPrintIndexAndIsPresent(segmentID)) {
+					new PrinterTask(metadata, pages, segment).run();
+				}
 				return;
 			}
 

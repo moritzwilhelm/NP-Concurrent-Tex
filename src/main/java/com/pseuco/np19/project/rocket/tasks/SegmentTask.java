@@ -46,7 +46,7 @@ public class SegmentTask extends Task {
 
 			pages.put(segment.getID(), renderedPages);
 
-			if (segment.getID() == metadata.getPrintIndex()) {
+			if (metadata.isNextToBePrinted(segment.getID())) {
 
 				// abort if an error was encountered (by any other Thread)
 				if (metadata.isBroken()) {
