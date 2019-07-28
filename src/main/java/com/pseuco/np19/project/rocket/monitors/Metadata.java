@@ -54,16 +54,23 @@ public class Metadata {
 	public synchronized void setNumSegments(int numSegments) {
 		this.numSegments = numSegments;
 	}
-	
+
 	public synchronized int getPrintIndex() {
 		return printIndex;
 	}
 
+	/*
+	 * adds SegmentID to finishedSegments and returns if this segment may be printed
+	 */
 	public synchronized boolean isNextToBePrinted(int ID) {
 		finishedSegments.add(ID);
 		return ID == printIndex;
 	}
 
+	/*
+	 * sets printIndex to given value and returns if the segment already passed the
+	 * isNextToBePrinted check
+	 */
 	public synchronized boolean setPrintIndexAndIsPresent(int printIndex) {
 		this.printIndex = printIndex;
 		return finishedSegments.contains(printIndex);
