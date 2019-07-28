@@ -1,5 +1,6 @@
 package com.pseuco.np19.project.rocket.monitors;
 
+import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -26,6 +27,8 @@ public class Metadata {
 	// index of the currently to be printed page
 	private int printIndex = 0;
 
+	private HashSet<Integer> finishedSegments = new HashSet<>();
+
 	// true if an error was encountered while processing the unit
 	private boolean broken = false;
 
@@ -48,16 +51,29 @@ public class Metadata {
 		return numSegments;
 	}
 
-	public synchronized void setNumSegments(int size) {
-		this.numSegments = size;
+	public synchronized void setNumSegments(int numSegments) {
+		this.numSegments = numSegments;
 	}
 
 	public synchronized int getPrintIndex() {
 		return printIndex;
 	}
 
-	public synchronized void setPrintIndex(int printIndex) {
+	/*
+	 * adds SegmentID to finishedSegments and returns if this segment may be printed
+	 */
+	public synchronized boolean isNextToBePrinted(int ID) {
+		finishedSegments.add(ID);
+		return ID == printIndex;
+	}
+
+	/*
+	 * sets printIndex to given value and returns if the segment already passed the
+	 * isNextToBePrinted check
+	 */
+	public synchronized boolean setPrintIndexAndIsPresent(int printIndex) {
 		this.printIndex = printIndex;
+		return finishedSegments.contains(printIndex);
 	}
 
 	public synchronized boolean isBroken() {
@@ -74,7 +90,7 @@ public class Metadata {
 	public synchronized void initiateTermination() {
 		try {
 			lock.lock();
-			executor.shutdown();		// prevent submission of any new Runnable
+			executor.shutdown(); // prevent submission of any new Runnable
 			terminating.signal();
 		} finally {
 			lock.unlock();
