@@ -60,13 +60,13 @@ public class Metadata {
 	}
 
 	public synchronized boolean isNextToBePrinted(int ID) {
-		finishedSegments.add(Integer.valueOf(ID));
+		finishedSegments.add(ID);
 		return ID == printIndex;
 	}
 
 	public synchronized boolean setPrintIndexAndIsPresent(int printIndex) {
 		this.printIndex = printIndex;
-		return finishedSegments.contains(Integer.valueOf(printIndex));
+		return finishedSegments.contains(printIndex);
 	}
 
 	public synchronized boolean isBroken() {
