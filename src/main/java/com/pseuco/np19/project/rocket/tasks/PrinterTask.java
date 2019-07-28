@@ -35,8 +35,10 @@ public class PrinterTask extends Task {
 				if (metadata.isBroken()) {
 					return;
 				}
-
-				printer.printPages(pages.get(segmentID));
+				
+				synchronized (printer) {
+					printer.printPages(pages.get(segmentID));
+				}
 				segmentID++;
 			}
 

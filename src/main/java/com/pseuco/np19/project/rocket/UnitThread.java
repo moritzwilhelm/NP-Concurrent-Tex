@@ -52,7 +52,7 @@ public class UnitThread extends Thread {
 				} catch (IOException e) {
 					e.printStackTrace();
 					metadata.setBroken();
-					
+
 					// signal waiting UnitThread that an error was encountered (prevents a deadlock)
 					metadata.initiateTermination();
 				}
@@ -76,15 +76,17 @@ public class UnitThread extends Thread {
 		} finally {
 			lock.unlock();
 		}
-		
+
 		// finally (try to) stop all running tasks (none, if no error was encountered)
 		executor.shutdownNow();
 
 		// print error page in case of error
 		if (metadata.isBroken()) {
 			try {
-				unit.getPrinter().printErrorPage();
-				unit.getPrinter().finishDocument();
+				synchronized (unit.getPrinter()) {
+					unit.getPrinter().printErrorPage();
+					unit.getPrinter().finishDocument();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
