@@ -26,38 +26,36 @@ public class ConcurrentDocument implements DocumentBuilder {
 
 	private final ExecutorService executor;
 
-	private int currentSegment;
+	private Segment currentSegment = new Segment(0);
+
+	private int currentSegmentID;
 
 	private int currentIndex;
-
-	private final Map<Integer, Segment> segments = new ConcurrentHashMap<>();
 
 	private final Map<Integer, List<Page>> pages = new ConcurrentHashMap<>();
 
 	public ConcurrentDocument(Metadata metadata) {
 		this.metadata = metadata;
 		this.executor = metadata.getExecutor();
-		this.segments.put(0, new Segment(0));
 	}
 
 	@Override
 	public void appendForcedPageBreak(Position position) {
 		// set size of current segment
-		segments.get(currentSegment).setSizeWhenDone(currentIndex + 1);
+		currentSegment.setSizeWhenDone(currentIndex + 1);
 
 		// submit new ForcedPageBreaktask to end the current segment
-		executor.submit(new BlockElementTask(metadata, pages, segments.get(currentSegment), new ForcedPageBreak(),
-				currentIndex));
+		executor.submit(new BlockElementTask(metadata, pages, currentSegment, new ForcedPageBreak(), currentIndex));
 
 		// start new segment and reset currentIndex
-		currentSegment += 1;
+		currentSegmentID += 1;
 		currentIndex = 0;
-		segments.put(currentSegment, new Segment(currentSegment));
+		currentSegment = new Segment(currentSegmentID);
 	}
 
 	@Override
 	public ParagraphBuilder appendParagraph(Position position) {
-		Paragraph paragraph = new ConcurrentParagraph(metadata, pages, segments.get(currentSegment), currentIndex);
+		Paragraph paragraph = new ConcurrentParagraph(metadata, pages, currentSegment, currentIndex);
 		currentIndex++;
 		return paragraph;
 	}
@@ -65,12 +63,11 @@ public class ConcurrentDocument implements DocumentBuilder {
 	@Override
 	public void finish() {
 		// set size of last segment
-		segments.get(currentSegment).setSizeWhenDone(currentIndex + 1);
+		currentSegment.setSizeWhenDone(currentIndex + 1);
 
-		metadata.setNumSegments(currentSegment + 1);
+		metadata.setNumSegments(currentSegmentID + 1);
 
 		// submit new ForcedPageBreaktask to end the last segment
-		executor.submit(new BlockElementTask(metadata, pages, segments.get(currentSegment), new ForcedPageBreak(),
-				currentIndex));
+		executor.submit(new BlockElementTask(metadata, pages, currentSegment, new ForcedPageBreak(), currentIndex));
 	}
 }
