@@ -44,9 +44,7 @@ public class SegmentTask extends Task {
 			List<Page> renderedPages = unit.getPrinter().renderPages(breakIntoPieces(configuration.getBlockParameters(),
 					this.items, configuration.getBlockTolerances(), configuration.getGeometry().getTextHeight()));
 
-			synchronized (pages) {
-				pages.put(segment.getID(), renderedPages);
-			}
+			pages.put(segment.getID(), renderedPages);
 
 			if (segment.getID() == metadata.getPrintIndex()) {
 

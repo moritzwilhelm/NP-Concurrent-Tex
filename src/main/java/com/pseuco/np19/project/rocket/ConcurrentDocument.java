@@ -1,8 +1,8 @@
 package com.pseuco.np19.project.rocket;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import com.pseuco.np19.project.launcher.parser.DocumentBuilder;
@@ -32,7 +32,7 @@ public class ConcurrentDocument implements DocumentBuilder {
 
 	private int currentIndex;
 
-	private final Map<Integer, List<Page>> pages = new HashMap<>();
+	private final Map<Integer, List<Page>> pages = new ConcurrentHashMap<>();
 
 	public ConcurrentDocument(Metadata metadata) {
 		this.metadata = metadata;
