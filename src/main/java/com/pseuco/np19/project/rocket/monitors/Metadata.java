@@ -1,6 +1,7 @@
 package com.pseuco.np19.project.rocket.monitors;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -31,7 +32,7 @@ public class Metadata {
 	private int printIndex = 0;
 
 	// set of Segments which are rendered but not yet printed
-	private HashSet<Integer> notYetPrintedSegments = new HashSet<>();
+	private final Set<Integer> notYetPrintedSegments = new HashSet<>();
 
 	public Metadata(Unit unit, ExecutorService executor, Lock lock, Condition terminating) {
 		this.unit = unit;
