@@ -31,15 +31,18 @@ public class Segment {
 		return blockElements;
 	}
 
-	public synchronized void put(int index, List<Item<Renderable>> items) {
-		blockElements.put(index, items);
-	}
-
 	public synchronized void setSizeWhenDone(int sizeWhenDone) {
 		this.sizeWhenDone = sizeWhenDone;
 	}
 
-	public synchronized boolean isComplete() {
+	/**
+	 * puts items into segment and checks for completion
+	 * @param index, the index at which items shall be put
+	 * @param items, the items to be put
+	 * @return true,  if this segment is complete after that
+	 */
+	public synchronized boolean isCompleteAfterPut(int index, List<Item<Renderable>> items) {
+		blockElements.put(index, items);
 		return blockElements.size() == sizeWhenDone;
 	}
 
