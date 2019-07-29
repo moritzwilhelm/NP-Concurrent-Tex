@@ -70,8 +70,8 @@ public class Metadata {
 	}
 
 	/**
-	 * returns if this segments may be printed and adds SegmentID to
-	 * finishedSegments if this is currently not the case
+	 * returns if this segments may be printed next and adds SegmentID to
+	 * notYetPrintedSegments if this is currently not the case
 	 */
 	public synchronized boolean isNextToBePrinted(int ID) {
 		boolean isNext = ID == printIndex;
