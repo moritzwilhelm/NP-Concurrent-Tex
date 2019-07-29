@@ -113,7 +113,10 @@ public class Metadata {
 			lock.unlock();
 		}
 	}
-
+	
+	/**
+	 * starts the parser
+	 */
 	public void startParser() {
 		new Thread(new Runnable() {
 			@Override
