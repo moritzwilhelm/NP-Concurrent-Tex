@@ -1,5 +1,6 @@
 package com.pseuco.np19.project.rocket.monitors;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -7,6 +8,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 import com.pseuco.np19.project.launcher.cli.Unit;
+import com.pseuco.np19.project.launcher.parser.Parser;
+import com.pseuco.np19.project.rocket.ConcurrentDocument;
 
 /**
  * Collection of metadata of the unit (including the unit itself)
@@ -17,6 +20,10 @@ public class Metadata {
 	private final Unit unit;
 
 	private final ExecutorService executor;
+
+	private final Parser parser;
+
+	private final ConcurrentDocument document;
 
 	private final Lock lock;
 
@@ -39,6 +46,9 @@ public class Metadata {
 		this.executor = executor;
 		this.lock = lock;
 		this.terminating = terminating;
+
+		this.document = new ConcurrentDocument(this);
+		this.parser = new Parser(this.unit.getInputReader(), document);
 	}
 
 	public Unit getUnit() {
@@ -96,10 +106,28 @@ public class Metadata {
 	public synchronized void initiateTermination() {
 		try {
 			lock.lock();
+			parser.abort();
 			executor.shutdown(); 	// prevent submission of any new Runnable
 			terminating.signal();
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	public void startParser() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					parser.buildDocument();
+				} catch (IOException e) {
+					e.printStackTrace();
+					setBroken();
+
+					// signal waiting UnitThread that an error was encountered (prevents a deadlock)
+					initiateTermination();
+				}
+			}
+		}).start();
 	}
 }

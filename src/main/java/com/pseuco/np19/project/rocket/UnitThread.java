@@ -8,7 +8,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.pseuco.np19.project.launcher.cli.Unit;
-import com.pseuco.np19.project.launcher.parser.Parser;
 import com.pseuco.np19.project.rocket.monitors.Metadata;
 
 /**
@@ -23,8 +22,6 @@ public class UnitThread extends Thread {
 
 	private final ExecutorService executor;
 
-	private final ConcurrentDocument document;
-
 	// executor.shutdown (needed in order to get a condition)
 	private final Lock lock;
 
@@ -37,27 +34,13 @@ public class UnitThread extends Thread {
 		this.lock = new ReentrantLock();
 		this.terminating = lock.newCondition();
 		this.metadata = new Metadata(this.unit, this.executor, lock, terminating);
-		this.document = new ConcurrentDocument(metadata);
 	}
 
 	@Override
 	public void run() {
 
-		// Submit ParserRunnable to executor
-		executor.submit(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Parser.parse(unit.getInputReader(), document);
-				} catch (IOException e) {
-					e.printStackTrace();
-					metadata.setBroken();
-
-					// signal waiting UnitThread that an error was encountered (prevents a deadlock)
-					metadata.initiateTermination();
-				}
-			}
-		});
+		// Start ParserThread
+		metadata.startParser();
 
 		/*
 		 * wait until shutdown: 
