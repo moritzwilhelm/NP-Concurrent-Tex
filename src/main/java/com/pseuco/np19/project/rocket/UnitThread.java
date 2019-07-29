@@ -30,7 +30,7 @@ public class UnitThread extends Thread {
 
 	public UnitThread(Unit unit) {
 		this.unit = unit;
-		this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
+		this.executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		this.lock = new ReentrantLock();
 		this.terminating = lock.newCondition();
 		this.metadata = new Metadata(this.unit, this.executor, lock, terminating);
