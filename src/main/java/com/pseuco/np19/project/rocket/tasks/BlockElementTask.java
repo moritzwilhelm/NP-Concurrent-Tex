@@ -27,6 +27,8 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 
 	private final Configuration configuration;
 
+	private final Segment segment;
+
 	private final BlockElement element;
 
 	private final int index;
@@ -35,8 +37,9 @@ public class BlockElementTask extends Task implements IBlockVisitor {
 
 	public BlockElementTask(Metadata metadata, Map<Integer, List<Page>> pages, Segment segment, BlockElement element,
 			int index) {
-		super(metadata, pages, segment);
+		super(metadata, pages);
 		this.configuration = unit.getConfiguration();
+		this.segment = segment;
 		this.element = element;
 		this.index = index;
 	}

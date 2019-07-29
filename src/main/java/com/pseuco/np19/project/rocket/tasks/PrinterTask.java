@@ -7,7 +7,6 @@ import java.util.Map;
 import com.pseuco.np19.project.launcher.printer.Page;
 import com.pseuco.np19.project.launcher.printer.Printer;
 import com.pseuco.np19.project.rocket.monitors.Metadata;
-import com.pseuco.np19.project.rocket.monitors.Segment;
 
 /**
  * Task which prints rendered pages
@@ -17,8 +16,8 @@ public class PrinterTask extends Task {
 
 	private final Printer printer;
 
-	protected PrinterTask(Metadata metadata, Map<Integer, List<Page>> pages, Segment segment) {
-		super(metadata, pages, segment);
+	protected PrinterTask(Metadata metadata, Map<Integer, List<Page>> pages) {
+		super(metadata, pages);
 		this.printer = unit.getPrinter();
 	}
 
@@ -26,7 +25,7 @@ public class PrinterTask extends Task {
 	public void run() {
 
 		try {
-			int segmentID = segment.getID();
+			int segmentID = metadata.getPrintIndex();
 
 			// while current segment pages are rendered, print them
 			do {
@@ -48,11 +47,11 @@ public class PrinterTask extends Task {
 			if (segmentID != metadata.getNumSegments()) {
 
 				/*
-				 * print next page if new page was put 
+				 * print next page if new page was put
 				 * (if a Task put a page since exiting the while-loop)
 				 */
 				if (metadata.updatePrintIndex(segmentID)) {
-					new PrinterTask(metadata, pages, segment).run();
+					new PrinterTask(metadata, pages).run();
 				}
 				// else the SegmentTask with ID == printID will start the next printing
 				return;

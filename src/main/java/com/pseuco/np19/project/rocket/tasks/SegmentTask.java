@@ -21,12 +21,15 @@ import com.pseuco.np19.project.rocket.monitors.Segment;
 public class SegmentTask extends Task {
 
 	private final Configuration configuration;
+	
+	private final Segment segment;
 
 	private final List<Item<Renderable>> items = new LinkedList<>();
 
 	protected SegmentTask(Metadata metadata, Map<Integer, List<Page>> pages, Segment segment) {
-		super(metadata, pages, segment);
+		super(metadata, pages);
 		configuration = unit.getConfiguration();
+		this.segment = segment;
 	}
 
 	@Override
@@ -54,7 +57,7 @@ public class SegmentTask extends Task {
 				}
 
 				// simulate/transform into a PrinterTask Runnable
-				new PrinterTask(metadata, pages, segment).run();
+				new PrinterTask(metadata, pages).run();
 			}
 
 		} catch (UnableToBreakException ignored) {
