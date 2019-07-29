@@ -69,23 +69,23 @@ public class Metadata {
 		return printIndex;
 	}
 
-	/*
+	/**
 	 * returns if this segments may be printed and adds SegmentID to
 	 * finishedSegments if this is currently not the case
 	 */
 	public synchronized boolean isNextToBePrinted(int ID) {
-		boolean isNext;
-		if (!(isNext = ID == printIndex)) {
+		boolean isNext = ID == printIndex;
+		if (!isNext) {
 			notYetPrintedSegments.add(ID);
 		}
 		return isNext;
 	}
 
-	/*
+	/**
 	 * sets printIndex to given value and returns if the segment already passed the
 	 * isNextToBePrinted check but has not been printed yet
 	 */
-	public synchronized boolean setPrintIndexAndIsPresent(int printIndex) {
+	public synchronized boolean updatePrintIndex(int printIndex) {
 		this.printIndex = printIndex;
 		return notYetPrintedSegments.contains(printIndex);
 	}

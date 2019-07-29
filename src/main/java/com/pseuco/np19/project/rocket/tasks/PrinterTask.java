@@ -29,18 +29,17 @@ public class PrinterTask extends Task {
 			int segmentID = segment.getID();
 
 			// while current segment pages are rendered, print them
-			while (pages.containsKey(segmentID)) {
-
+			do {
 				// abort if an error was encountered (by any other Thread)
 				if (metadata.isBroken()) {
 					return;
 				}
-				
+
 				synchronized (printer) {
 					printer.printPages(pages.get(segmentID));
 				}
 				segmentID++;
-			}
+			} while (pages.containsKey(segmentID));
 
 			/*
 			 * set PrintIndex to segmentID if current to be printed pages have not been
@@ -52,7 +51,7 @@ public class PrinterTask extends Task {
 				 * print next page if new page was put 
 				 * (if a Task put a page since exiting the while-loop)
 				 */
-				if (metadata.setPrintIndexAndIsPresent(segmentID)) {
+				if (metadata.updatePrintIndex(segmentID)) {
 					new PrinterTask(metadata, pages, segment).run();
 				}
 				// else the SegmentTask with ID == printID will start the next printing
