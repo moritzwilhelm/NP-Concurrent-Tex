@@ -45,8 +45,11 @@ public class ConcurrentDocument implements DocumentBuilder {
 		currentSegment.setSizeWhenDone(currentIndex + 1);
 
 		// submit new ForcedPageBreaktask to end the current segment
-		executor.submit(new BlockElementTask(metadata, pages, currentSegment, new ForcedPageBreak(), currentIndex));
-
+		try {
+			executor.submit(new BlockElementTask(metadata, pages, currentSegment, new ForcedPageBreak(), currentIndex));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		// start new segment and reset currentIndex
 		currentSegmentID += 1;
 		currentIndex = 0;
@@ -68,6 +71,10 @@ public class ConcurrentDocument implements DocumentBuilder {
 		metadata.setNumSegments(currentSegmentID + 1);
 
 		// submit new ForcedPageBreaktask to end the last segment
-		executor.submit(new BlockElementTask(metadata, pages, currentSegment, new ForcedPageBreak(), currentIndex));
+		try {
+			executor.submit(new BlockElementTask(metadata, pages, currentSegment, new ForcedPageBreak(), currentIndex));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
