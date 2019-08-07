@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.function.IntPredicate;
 
+import com.pseuco.np19.project.rocket.monitors.SynchronizedBoolean;
+
 /**
  * A stream-parser for input documents. Builds a document using a {@link DocumentBuilder}.
  */
@@ -22,7 +24,7 @@ public class Parser {
 
     private ParagraphBuilder activeParagraph;
 
-    private boolean aborted = false;
+    private SynchronizedBoolean aborted = new SynchronizedBoolean(false);
 
     private int savedLine = 0;
     private int savedColumn = 0;
@@ -115,7 +117,7 @@ public class Parser {
      * Aborts the parsing process.
      */
     public void abort() {
-        this.aborted = true;
+        this.aborted.setValue(true);
     }
 
     /**
@@ -124,7 +126,7 @@ public class Parser {
      * @throws IOException In case there is an error reading the document.
      */
     public void buildDocument() throws IOException {
-        while (!this.aborted && this.peek() > 0) {
+        while (!this.aborted.getValue() && this.peek() > 0) {
             this.savePosition();
             if (this.accept('-')) {
                 this.lazyStartParagraph();
@@ -159,7 +161,7 @@ public class Parser {
                 this.activeParagraph.appendSpecial(this.getSavedPosition(), value);
             }
         }
-        if (!this.aborted) {
+        if (!this.aborted.getValue()) {
             this.lazyEndParagraph();
             this.documentBuilder.finish();
         }
