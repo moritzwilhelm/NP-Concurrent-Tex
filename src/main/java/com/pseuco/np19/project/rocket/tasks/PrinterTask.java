@@ -51,7 +51,7 @@ public class PrinterTask extends Task {
 				 * (if a Task put a page since exiting the while-loop)
 				 */
 				if (metadata.updatePrintIndex(segmentID)) {
-					new PrinterTask(metadata, pages).run();
+					run();
 				}
 				// else the SegmentTask with ID == printID will start the next printing
 				return;
