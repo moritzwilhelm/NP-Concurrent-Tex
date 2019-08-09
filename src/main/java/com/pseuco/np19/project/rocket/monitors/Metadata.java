@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
@@ -129,6 +130,8 @@ public class Metadata {
 
 					// signal waiting UnitThread that an error was encountered (prevents a deadlock)
 					initiateTermination();
+				} catch (RejectedExecutionException e) {
+					return;
 				}
 			}
 		}).start();

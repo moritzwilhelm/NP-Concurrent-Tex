@@ -32,10 +32,6 @@ public class ConcurrentParagraph extends Paragraph {
 	@Override
 	public void finish() {
 		// submit Paragraph for processing once parser has finished parsing it
-		try {
-			metadata.getExecutor().submit(new BlockElementTask(metadata, this.pages, this.segment, this, this.index));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		metadata.getExecutor().submit(new BlockElementTask(metadata, this.pages, this.segment, this, this.index));
 	}
 }
