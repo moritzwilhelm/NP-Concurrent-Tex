@@ -49,6 +49,7 @@ public class ConcurrentDocument implements DocumentBuilder {
 			executor.submit(new BlockElementTask(metadata, pages, currentSegment, new ForcedPageBreak(), currentIndex));
 		} catch (Exception e) {
 			e.printStackTrace();
+			return;
 		}
 		// start new segment and reset currentIndex
 		currentSegmentID += 1;
