@@ -11,6 +11,12 @@ __pycache__
 .idea
 *.iml
 
+# Eclipse
+.settings
+bin
+.classpath
+.project
+
 # Output and PDFs
 *.out
 *.pdf
